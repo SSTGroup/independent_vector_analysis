@@ -31,16 +31,18 @@ Each source consists of T=10000 samples:
     K = 4
     T = 10000
     rho = 0.7
-    
-    S = generate_sources(rho, N, T, K)
+    S = np.zeros((N, T, K))
+    for idx in range(N):
+        S[idx, :, :] = MGGD_generation(T, K, 'ar', rho, 1)[0].T
     A = np.random.randn(N,N,K)
     X = np.einsum('MNK, NTK -> MTK', A, S)
-     
+    W, cost, Sigma_n, isi = iva_g(X, A=A, jdiag_initW=False)
+
 Apply IVA-G to reconstruct the sources.
 If the mixing matrix *A* is passed, the ISI is calculated.
 Let the demixing matrix W be initialized by joint diagonalization:
 
-    W, cost, Sigma_n, isi = iva_g(X, A=A, jdiag_initW=True)
+    W, cost, Sigma_n, isi = iva_g(X, A=A, jdiag_initW=False)
 
 *W* is the estimated demixing matrix.
 *cost* is the cost for each iteration.
