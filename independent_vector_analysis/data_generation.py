@@ -180,8 +180,8 @@ def MGGD_generation(N, p=None, correlation_structure=None, rho=None, beta=1, Sig
                 if type(rho['blocks']) is not list and type(rho['block']) is not tuple:
                     raise AssertionError("'rho[blocks]' must be tuple or list of tuples.")
         else:
-            if type(rho) is not float:
-                raise AssertionError("'rho' must be a float value.")
+            if type(rho) is not float and type(rho) is not int:
+                raise AssertionError("'rho' must be a float or int value.")
 
         if correlation_structure not in ['uniform', 'ar', 'two_rho', 'rho_list', 'q_qt']:
             raise AssertionError("'correlation_structure' must be 'uniform', 'ar', 'two_rho', "
@@ -205,7 +205,7 @@ def MGGD_generation(N, p=None, correlation_structure=None, rho=None, beta=1, Sig
 
     if Sigma is None:
         # This is the covariance matrix we want
-        COV1 = np.abs(_create_covariance_matrix(p, rho, correlation_structure))
+        COV1 = np.abs(_create_covariance_matrix(p, correlation_structure, rho))
     else:
         COV1 = np.copy(Sigma)
 
