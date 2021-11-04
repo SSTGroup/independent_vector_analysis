@@ -71,11 +71,12 @@ If you use this package in an academic paper, please cite [1]
     @inproceedings{Lehmann2022,
       author  = {Lehmann, Isabell and Acar, Evrim and Hasija, Tanuj and Akhonda, M.A.B.S. and Calhoun, Vince D. and Schreier, Peter J. and Adali, Tulay},
       title   = {Multi-task fMRI Data Fusion Using IVA and PARAFAC2},
-      journal = {unpublished work}
+      journal = {Submitted for ICASSP},
+	  year = {2022}
     }
     
     
-[1] Isabell Lehmann, Evrim Acar, et. al, **Multi-task fMRI Data Fusion Using IVA and PARAFAC2**, *unpublished work*.
+[1] Isabell Lehmann, Evrim Acar, et. al, **Multi-task fMRI Data Fusion Using IVA and PARAFAC2**, *Submitted for ICASSP*, 2022.
 
 
 
