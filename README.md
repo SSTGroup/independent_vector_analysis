@@ -63,6 +63,9 @@ where *iva_results* is a dict containing:
 
 [comment]: <> (If you see a bug, open an [issue]&#40;https://github.com/tensorly/tensorly/issues&#41;, or better yet, a [pull-request]&#40;https://github.com/tensorly/tensorly/pulls>&#41;!)
 
+## Contact
+
+In case of questions, suggestions, problems etc. please send an email to isabell.lehmann@sst.upb.de, or open an issue here on Github.
 
 ## Citing
 
