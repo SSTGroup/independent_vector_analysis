@@ -22,7 +22,7 @@ First, the imports:
 
     import numpy as np
     from independent_vector_analysis import iva_g, consistent_iva
-    from independent_vector_analysis.data_generation import generate_sources
+    from independent_vector_analysis.data_generation import MGGD_generation
 
 Create a dataset with N=3 sources, which are correlated across K=4 datasets.
 Each source consists of T=10000 samples:
