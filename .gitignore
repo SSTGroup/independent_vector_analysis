@@ -10,3 +10,4 @@
 .idea/
 pyproject.toml
 build/
+notebooks/.ipynb_checkpoints/

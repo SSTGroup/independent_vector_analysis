@@ -7,7 +7,7 @@ def readme():
 
 
 setup(name='independent_vector_analysis',
-      version='0.2.1',
+      version='0.2.2',
       description='Implementation of IVA-G and IVA-L-SOS',
       long_description=readme(),
       long_description_content_type='text/markdown',
@@ -29,6 +29,7 @@ setup(name='independent_vector_analysis',
           'pytest',
           'joblib',
           'tqdm',
+          'matplotlib',
       ],
       include_package_data=True,  # to include non .py-files listed in MANIFEST.in
       zip_safe=False)
