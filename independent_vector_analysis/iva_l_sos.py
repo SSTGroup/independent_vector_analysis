@@ -241,7 +241,7 @@ def iva_l_sos(X, whiten=True, grad_projection=False, verbose=False, A=None, W_in
         else:
             A_w = np.copy(A)
     else:
-        isi = np.nan
+        isi = None
 
     # Initialize some local variables
     cost = np.zeros(max_iter)

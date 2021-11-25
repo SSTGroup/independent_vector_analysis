@@ -266,7 +266,7 @@ def iva_g(X, opt_approach='newton', complex_valued=False, circular=False, whiten
         else:
             A_w = np.copy(A)
     else:
-        isi = np.nan
+        isi = None
 
     # Initialize some local variables
     cost = np.zeros(max_iter)
