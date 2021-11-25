@@ -45,10 +45,12 @@ import time
 from .helpers_iva import _normalize_column_vectors, whiten_data, _bss_isi, _decouple_trick, \
     _comp_l_sos_cost, _resort_scvs
 from .initializations import _jbss_sos, _cca
+from .iva_g import iva_g
 
 
 def iva_l_sos(X, whiten=True, grad_projection=False, verbose=False, A=None, W_init=None,
-              jdiag_initW=False, max_iter=2 * 512, termination_criterion='change_in_W',
+              jdiag_initW=False, iva_g_initW = True, max_iter=2 * 512,
+              termination_criterion='change_in_W',
               W_diff_stop=1e-4, alpha0=1.0, return_W_change=False):
     """
     Implementation of the independent vector analysis (IVA) algorithm using a correlated
@@ -87,6 +89,9 @@ def iva_l_sos(X, whiten=True, grad_projection=False, verbose=False, A=None, W_in
 
     jdiag_initW : bool, optional
         if True, use CCA (K=2) / joint diagonalization (K>2) for initialization, else random
+
+    iva_g_initW : bool, optional
+        If True, run IVA-G to find initialization for W, then run IVA-L-SOS
 
     max_iter : int, optional
          max number of iterations
@@ -219,6 +224,9 @@ def iva_l_sos(X, whiten=True, grad_projection=False, verbose=False, A=None, W_in
 
             else:
                 W = _cca(X)
+
+        elif iva_g_initW:
+            W = iva_g(X, max_iter=512)[0]
 
         else:
             # randomly initialize
