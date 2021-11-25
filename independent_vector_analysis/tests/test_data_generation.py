@@ -83,6 +83,7 @@ def test_mggd():
     X = MGGD_generation(1000, 7, 'q_qt', 0.5, 1)
     X = MGGD_generation(1000, 7, 'rho_list', np.array([0.8, 0.7, 0.7, 0.8, 0.7, 0.8]), 1)
     X = MGGD_generation(1000, 7, 'rho_list', [0.8, 0.7, 0.7, 0.8, 0.7, 0.8], 1)
+    X = MGGD_generation(1000, 7, 'block', {'val': 0.3, 'blocks': (0.9, 4, 8)}, 1)
 
 
 def test_randmv_laplace():

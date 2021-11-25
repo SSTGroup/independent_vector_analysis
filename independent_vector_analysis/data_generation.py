@@ -106,9 +106,9 @@ def generate_sources(rho, N, T, K):
 
 def MGGD_generation(N, p=None, correlation_structure=None, rho=None, beta=1, Sigma=None):
     """
-    Contains five functions that can be used to generate multivariate generalized Gaussian (MGGD)
-    distributed sources. If Sigma is given, none of the functions will be used but data will be
-    generated using Sigma.
+    Contains six functions that can be used to generate multivariate generalized Gaussian
+    distributed (MGGD) sources. If Sigma is given, none of the functions will be used but data will
+    be generated using Sigma.
     
     
     Parameters
@@ -122,7 +122,7 @@ def MGGD_generation(N, p=None, correlation_structure=None, rho=None, beta=1, Sig
     correlation_structure : str, optional
         Which structure of correlation matrix to use. Must be given if Sigma is None.
             - 'uniform': elements are equal to rho
-            - 'ar': cov[i, j] = rho ** (np.abs(i - j))
+            - 'ar' (auto regressive): cov[i, j] = rho ** (np.abs(i - j))
             - 'q_qt': normalized random samples ~ U[-0.2, 0.8) multiplied by themselves
             - 'two_rho': most elements are equal, specific elements have another value
             - 'rho_list': elements of each row/column of the covariance matrix have a specific value
@@ -213,19 +213,19 @@ def MGGD_generation(N, p=None, correlation_structure=None, rho=None, beta=1, Sig
                 raise AssertionError("'rho must be dict with rho['val'] = np.ndarray, "
                                      "rho['blocks'] = tuple or list of tuples.")
             else:
-                if sorted(list(rho.keys())) != ['idx', 'blocks']:
+                if sorted(list(rho.keys())) != ['blocks', 'val']:
                     raise AssertionError("'rho' must have keys 'val' and 'blocks'.")
                 elif type(rho['val']) is not float:
                     raise AssertionError("'rho[val]' must be a float value.")
-                if type(rho['blocks']) is not list and type(rho['block']) is not tuple:
+                if type(rho['blocks']) is not list and type(rho['blocks']) is not tuple:
                     raise AssertionError("'rho[blocks]' must be tuple or list of tuples.")
         else:
             if type(rho) is not float and type(rho) is not int:
                 raise AssertionError("'rho' must be a float or int value.")
 
-        if correlation_structure not in ['uniform', 'ar', 'two_rho', 'rho_list', 'q_qt']:
-            raise AssertionError("'correlation_structure' must be 'uniform', 'ar', 'two_rho', "
-                                 "'rho_list' or 'q_qt'.")
+        if correlation_structure not in ['uniform', 'ar', 'q_qt', 'two_rho', 'rho_list', 'block']:
+            raise AssertionError("'correlation_structure' must be 'uniform', 'ar', 'q_qt', "
+                                 "'two_rho', 'rho_list', or 'block'.")
 
     else:
         p = Sigma.shape[0]
