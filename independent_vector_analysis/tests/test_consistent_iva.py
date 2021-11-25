@@ -78,11 +78,22 @@ def test_consistent_iva_calls():
         X[:, :, k] = A[:, :, k] @ S[:, :, k]
 
     start = time.time()
-    iva_results = consistent_iva(X, which_iva='iva_g', n_runs=20, parallel=True, max_iter=20)
+    iva_results = consistent_iva(X, which_iva='iva_g', n_runs=3, parallel=True, max_iter=20)
     end = time.time()
     print(f'Parallel loop: {end - start} seconds')
 
     start = time.time()
-    iva_results = consistent_iva(X, which_iva='iva_g', n_runs=20, parallel=False, max_iter=20)
+    iva_results = consistent_iva(X, A=A, which_iva='iva_l_sos', n_runs=3, parallel=False, max_iter=20)
+    end = time.time()
+    print(f'Parallel loop: {end - start} seconds')
+
+
+    start = time.time()
+    iva_results = consistent_iva(X, which_iva='iva_g', n_runs=3, parallel=False, max_iter=5)
+    end = time.time()
+    print(f'Sequential loop: {end - start} seconds')
+
+    start = time.time()
+    iva_results = consistent_iva(X, which_iva='iva_l_sos', n_runs=3, parallel=False, max_iter=5)
     end = time.time()
     print(f'Sequential loop: {end - start} seconds')
