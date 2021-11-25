@@ -78,8 +78,8 @@ def test_generate_sources():
 def test_mggd():
     X = MGGD_generation(1000, 7, 'uniform', 0.5, 1)
     X = MGGD_generation(1000, 7, 'ar', 0.5, 1)
-    rho = {'val': np.array([0.5, 0.8]), 'idx': np.array([0, 2, 3, 4])}
-    X = MGGD_generation(1000, 7, 'two_rho', rho, 1)
+    X = MGGD_generation(1000, 7, 'two_rho',
+                        {'val': np.array([0.5, 0.8]), 'idx': np.array([0, 2, 3, 4])}, 1)
     X = MGGD_generation(1000, 7, 'q_qt', 0.5, 1)
     X = MGGD_generation(1000, 7, 'rho_list', np.array([0.8, 0.7, 0.7, 0.8, 0.7, 0.8]), 1)
     X = MGGD_generation(1000, 7, 'rho_list', [0.8, 0.7, 0.7, 0.8, 0.7, 0.8], 1)
