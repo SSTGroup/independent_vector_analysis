@@ -64,7 +64,7 @@ def calculate_cov(X):
     return cov
 
 
-def calculate_corr(X):
+def calculate_corrcoef(X):
     """
     Calculate correlation coefficient matrices of given data.
 
