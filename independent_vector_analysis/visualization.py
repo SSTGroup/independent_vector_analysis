@@ -47,6 +47,7 @@ from mpl_toolkits.axes_grid1 import ImageGrid
 def calculate_cov(X):
     """
     Calculate covariance matrices of given data.
+
     Parameters
     ----------
     X: np.ndarray
@@ -59,14 +60,33 @@ def calculate_cov(X):
 
     cov = np.zeros((X.shape[2], X.shape[2], X.shape[0]))
     for comp_id in range(X.shape[0]):
-        std = np.std(X[comp_id, :, :], axis=0, ddof=1)
-        cov[:, :, comp_id] = np.cov(X[comp_id, :, :].T) / np.outer(std, std)
+        cov[:, :, comp_id] = np.cov(X[comp_id, :, :].T)
     return cov
+
+
+def calculate_corr(X):
+    """
+    Calculate correlation coefficient matrices of given data.
+
+    Parameters
+    ----------
+    X: np.ndarray
+        dimensions: number components x number samples x number datasets
+
+    Returns
+    -------
+
+    """
+
+    corr = np.zeros((X.shape[2], X.shape[2], X.shape[0]))
+    for comp_id in range(X.shape[0]):
+        corr[:, :, comp_id] = np.corrcoef(X[comp_id, :, :].T)
+    return corr
 
 
 def plot_scv_covs(scv_cov, n_cols=None):
     """
-    Plot covariance matrix of each SCV.
+    Plot covariance matrix of each SCV. As sources are unit norm, covariance equals correlation.
 
     Parameters
     ----------
