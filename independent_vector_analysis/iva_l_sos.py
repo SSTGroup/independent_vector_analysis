@@ -73,7 +73,8 @@ def iva_l_sos(X, whiten=True, grad_projection=False, verbose=False, A=None, W_in
          datasets.
 
     whiten : bool, optional
-         if True, data is whitened. Whitening significantly decreases the runtime of the algorithm.
+        If True, data is whitened. Whitening significantly decreases the runtime of the algorithm.
+        If data is not zero-mean, whiten is forced to True
 
     grad_projection : bool, optional
         if True, the non-colinear direction is normalized
@@ -179,6 +180,10 @@ def iva_l_sos(X, whiten=True, grad_projection=False, verbose=False, A=None, W_in
     # set alpha0 to max(alpha_min, alpha0*alpha_scale) when cost does not decrease
     alpha_scale = 0.9
     alpha_min = W_diff_stop
+
+    # test if data is zero-mean (test added by Isabell Lehmann)
+    if np.linalg.norm(np.mean(X, axis=1)) > 1e-12:
+        whiten = True
 
     if whiten:
         X, V = whiten_data(X)

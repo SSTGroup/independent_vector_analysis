@@ -82,7 +82,8 @@ def iva_g(X, opt_approach='newton', complex_valued=False, circular=False, whiten
 
     whiten : bool, optional
         if True, data is whitened.
-        For the complex-valued gradient and for quasi approach, whiten is forced to True
+        For the complex-valued gradient and for quasi approach, whiten is forced to True.
+        If data is not zero-mean, whiten is forced to True
 
     verbose : bool, optional
         enables print statements if True. Automatically set to True if A is provided
@@ -183,6 +184,10 @@ def iva_g(X, opt_approach='newton', complex_valued=False, circular=False, whiten
     # whitening is required for the quasi & complex-valued gradient approach
     whiten = whiten or (opt_approach == 'quasi') or (
             complex_valued and opt_approach == 'gradient')
+
+    # test if data is zero-mean (test added by Isabell Lehmann)
+    if np.linalg.norm(np.mean(X, axis=1)) > 1e-12:
+        whiten = True
 
     if whiten:
         X, V = whiten_data(X)
