@@ -46,7 +46,7 @@ from ..iva_g import iva_g
 
 def test_iva_g():
     """
-    test iva_second_order
+    test iva_g
     """
 
     N = 10  # number of sources
