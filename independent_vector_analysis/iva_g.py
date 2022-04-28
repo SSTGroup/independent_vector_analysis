@@ -86,7 +86,7 @@ def iva_g(X, opt_approach='newton', complex_valued=False, circular=False, whiten
         If data is not zero-mean, whiten is forced to True
 
     verbose : bool, optional
-        enables print statements if True. Automatically set to True if A is provided
+        enables print statements if True
 
     A : np.ndarray, optional
         true mixing matrices A of dimensions N x N x K, automatically sets verbose to True
@@ -259,9 +259,6 @@ def iva_g(X, opt_approach='newton', complex_valued=False, circular=False, whiten
                 W[:, :, k] = np.linalg.solve(sc.linalg.sqrtm(W[:, :, k] @ W[:, :, k].T), W[:, :, k])
 
     if supply_A:
-        # only reason to supply A matrices is to display running performance and to compute
-        # output_isi
-        verbose = True
         isi = np.zeros(max_iter)
         if whiten:
             # A matrix is conditioned by V if data is whitened
@@ -520,7 +517,9 @@ def iva_g(X, opt_approach='newton', complex_valued=False, circular=False, whiten
     W, Sigma_N = _resort_scvs(W, R_xx, whiten, V, complex_valued, circular, P_xx)
 
     end = time.time()
-    print(f"IVA-G finished after {(end - start) / 60} minutes with {iteration} iterations.")
+
+    if verbose:
+        print(f"IVA-G finished after {(end - start) / 60} minutes with {iteration} iterations.")
 
     if return_W_change:
         return W, cost, Sigma_N, isi, W_change
