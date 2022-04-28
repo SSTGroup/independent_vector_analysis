@@ -8,7 +8,7 @@ This package contains the Python versions of IVA-G and IVA-L-SOS, converted from
 
 ## Installing independent_vector_analysis
 
-The only pre-requisite is to have **Python 3** installed.
+The only pre-requisite is to have **Python 3** (>= version 3.6) installed.
 The iva package can be installed with
 
     pip install independent_vector_analysis
