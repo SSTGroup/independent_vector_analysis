@@ -84,7 +84,7 @@ def calculate_corrcoef(X):
     return corr
 
 
-def plot_scv_covs(scv_cov, n_cols=None):
+def plot_scv_covs(scv_cov, n_cols=None, labels=None):
     """
     Plot covariance matrix of each SCV. As sources are unit norm, covariance equals correlation.
 
@@ -121,7 +121,10 @@ def plot_scv_covs(scv_cov, n_cols=None):
     for i, ax in enumerate(grid):
         if i < n_sources:
             im = ax.imshow(np.abs(scv_cov[:, :, i]), vmin=0, vmax=1, cmap='hot')
-            ax.set_title(f'SCV {i + 1}', fontsize=20, pad=4)
+            if labels is None:
+                ax.set_title(f'SCV {i + 1}', fontsize=20, pad=4)
+            else:
+                ax.set_title(f'{labels[i]}', fontsize=20, pad=4)
         ax.axis('off')
 
     # Big colorbar on the right
