@@ -81,5 +81,5 @@ If you use this package in an academic paper, please cite [1]
       } 
     
     
-[1] Isabell Lehmann, Evrim Acar, et al., **Multi-task fMRI Data Fusion Using IVA and PARAFAC2**, *ICASSP 2022 - 2022 IEEE International Conference on Acoustics, Speech and Signal Processing (ICASSP)*, 2022.
+[1] Isabell Lehmann, Evrim Acar, et al., **Multi-task fMRI Data Fusion Using IVA and PARAFAC2**, *ICASSP 2022 - 2022 IEEE International Conference on Acoustics, Speech and Signal Processing (ICASSP)*, 2022, pp. 1466-1470.
 
