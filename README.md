@@ -1,6 +1,6 @@
 # Independent Vector Analysis
    
-This package contains the Python versions of IVA-G and IVA-L-SOS, converted from the [MLSP-Lab MATLAB Codes](http://mlsp.umbc.edu/resources.html).
+This package contains the Python versions of IVA-G [1] and IVA-L-SOS [2], converted from the [MLSP-Lab MATLAB Codes](http://mlsp.umbc.edu/resources.html).
 
 - **Website:** http://mlsp.umbc.edu/jointBSS_introduction.html
 - **Source-code:** https://github.com/SSTGroup/independent_vector_analysis
@@ -69,7 +69,7 @@ In case of questions, suggestions, problems etc. please send an email to isabell
 
 ## Citing
 
-If you use this package in an academic paper, please cite [1]
+If you use this package in an academic paper, please cite [3].
 
     @inproceedings{Lehmann2022,
       title   = {Multi-task fMRI Data Fusion Using IVA and PARAFAC2},
@@ -80,6 +80,10 @@ If you use this package in an academic paper, please cite [1]
       organization={IEEE}
       } 
     
-    
-[1] Isabell Lehmann, Evrim Acar, et al., **Multi-task fMRI Data Fusion Using IVA and PARAFAC2**, *ICASSP 2022 - 2022 IEEE International Conference on Acoustics, Speech and Signal Processing (ICASSP)*, 2022, pp. 1466-1470.
+
+[1] M. Anderson, T. Adali, & X.-L. Li, **Joint Blind Source Separation with Multivariate Gaussian Model: Algorithms and Performance Analysis**, *IEEE Transactions on Signal Processing*, 2012, 60, 1672-1683
+
+[2] S. Bhinge, R. Mowakeaa, V.D. Calhoun, T. Adalı, **Extraction of time-varying spatio-temporal networks using parameter-tuned constrained IVA**, *IEEE Transactions on Medical Imaging*, 2019, vol. 38, no. 7, 1715-1725
+
+[3] Isabell Lehmann, Evrim Acar, et al., **Multi-task fMRI Data Fusion Using IVA and PARAFAC2**, *ICASSP 2022 - 2022 IEEE International Conference on Acoustics, Speech and Signal Processing (ICASSP)*, 2022, pp. 1466-1470
 
