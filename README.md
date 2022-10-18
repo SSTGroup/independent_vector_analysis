@@ -85,5 +85,5 @@ If you use this package in an academic paper, please cite [3].
 
 [2] S. Bhinge, R. Mowakeaa, V.D. Calhoun, T. Adalı, **Extraction of time-varying spatio-temporal networks using parameter-tuned constrained IVA**, *IEEE Transactions on Medical Imaging*, 2019, vol. 38, no. 7, 1715-1725
 
-[3] Isabell Lehmann, Evrim Acar, et al., **Multi-task fMRI Data Fusion Using IVA and PARAFAC2**, *ICASSP 2022 - 2022 IEEE International Conference on Acoustics, Speech and Signal Processing (ICASSP)*, 2022, pp. 1466-1470
+[3] I. Lehmann, E. Acar, et al., **Multi-task fMRI Data Fusion Using IVA and PARAFAC2**, *ICASSP 2022 - 2022 IEEE International Conference on Acoustics, Speech and Signal Processing (ICASSP)*, 2022, pp. 1466-1470
 
