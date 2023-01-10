@@ -295,24 +295,23 @@ def whiten_data(x, dim_red=None):
         data vector of dimensions N x T x K (#sources x #samples x #datasets) or N x T
 
     dim_red : int, optional
-        dimension to which the data should be reduced
+        dimension to which the data should be reduced. Set to N if None.
 
 
     Returns
     -------
     z : np.ndarray
-        whitened data of dimension N x T x K or N x T
+        whitened data of dimension dim_red x T x K or dim_red x T
 
     V : np.ndarray
-        whitening transformation of dimension N x N x K or N x N
+        whitening transformation of dimension dim_red x N x K or dim_red x N
 
     """
+
     if dim_red is None:
         dim_red = x.shape[0]
 
     if x.ndim == 2:
-        N, T = x.shape
-
         # Step 1. Center the data.
         x_zm = x - np.mean(x, axis=1, keepdims=True)
 
