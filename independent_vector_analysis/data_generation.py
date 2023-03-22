@@ -239,7 +239,7 @@ def MGGD_generation(N, dim=None, correlation_structure=None, rho=None, beta=1, c
 
     if cov is None:
         # This is the covariance matrix of X
-        cov = np.abs(_create_covariance_matrix(dim, correlation_structure, rho))
+        cov = _create_covariance_matrix(dim, correlation_structure, rho)
 
         # make sure randomly generated cov is positive semidefinite. If not, regenerate
         flag = 0
@@ -248,7 +248,7 @@ def MGGD_generation(N, dim=None, correlation_structure=None, rho=None, beta=1, c
                 np.linalg.cholesky(cov)
                 flag = 1
             except:
-                cov = np.abs(_create_covariance_matrix(dim, correlation_structure, rho))
+                cov = _create_covariance_matrix(dim, correlation_structure, rho)
 
     u = _random_sphere(N, dim).T  # u^(n) in (3)
 
