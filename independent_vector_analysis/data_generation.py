@@ -268,7 +268,7 @@ def MGGD_generation(N, dim=None, correlation_structure=None, rho=None, beta=1, c
 
 def _create_covariance_matrix(dim, correlation_structure, rho):
     if correlation_structure == 'uniform':
-        Sigma = np.full((dim, dim), rho)
+        Sigma = np.full((dim, dim), rho, dtype=float)
         np.fill_diagonal(Sigma, 1)
 
     elif correlation_structure == 'ar':
@@ -282,7 +282,7 @@ def _create_covariance_matrix(dim, correlation_structure, rho):
         Sigma = R @ R.T
 
     elif correlation_structure == 'two_rho':
-        Sigma = np.full((dim, dim), rho['val'][0])
+        Sigma = np.full((dim, dim), rho['val'][0], dtype=float)
         for i in rho['idx']:
             for j in rho['idx']:
                 Sigma[i, j] = rho['val'][1]
@@ -308,7 +308,7 @@ def _create_covariance_matrix(dim, correlation_structure, rho):
         else:
             csl = rho['blocks']
 
-        Sigma = np.full((dim, dim), rho['val'])
+        Sigma = np.full((dim, dim), rho['val'], dtype=float)
         for (correlation, start, length) in csl:
             Sigma[start:start + length, start:start + length] = correlation
         np.fill_diagonal(Sigma, 1)
@@ -319,7 +319,7 @@ def _create_covariance_matrix(dim, correlation_structure, rho):
         else:
             csl = rho['blocks']
 
-        Sigma = np.full((dim, dim), rho['val'])
+        Sigma = np.full((dim, dim), rho['val'], dtype=float)
         for (correlation, start, length) in csl:
             Sigma[start:start + length, start:start + length] = correlation
             # add noise to blocks
