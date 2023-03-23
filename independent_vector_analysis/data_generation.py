@@ -325,7 +325,7 @@ def _create_covariance_matrix(dim, correlation_structure, rho):
             # add noise to blocks
             for i in range(start, start + length):
                 for j in range(i + 1, start + length):
-                    noise = np.random.randn(1) * 0.1
+                    noise = np.random.randn(1) * 0.05
                     Sigma[i, j] += noise
                     Sigma[j, i] += noise
         np.fill_diagonal(Sigma, 1)
