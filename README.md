@@ -1,6 +1,6 @@
 # Independent Vector Analysis
    
-This package contains the Python versions of IVA-G [1] and IVA-L-SOS [2], converted from the [MLSP-Lab MATLAB Codes](http://mlsp.umbc.edu/resources.html).
+This package contains the Python versions of Independent Vector Analysis (IVA-G [1] and IVA-L-SOS [2]), converted from the [MLSP-Lab MATLAB Codes](http://mlsp.umbc.edu/resources.html).
 
 - **Website:** http://mlsp.umbc.edu/jointBSS_introduction.html
 - **Source-code:** https://github.com/SSTGroup/independent_vector_analysis
