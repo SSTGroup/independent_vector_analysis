@@ -42,10 +42,9 @@ import numpy as np
 import scipy as sc
 import time
 
-from .helpers_iva import _normalize_column_vectors, _decouple_trick, _bss_isi, whiten_data, \
+from helpers_iva import _normalize_column_vectors, _decouple_trick, _bss_isi, whiten_data, \
     _resort_scvs
-from .initializations import _jbss_sos, _cca
-
+from initializations import _jbss_sos, _cca
 
 def iva_g(X, opt_approach='newton', complex_valued=False, circular=False, whiten=True,
           verbose=False, A=None, W_init=None, jdiag_initW=False, max_iter=1024,
