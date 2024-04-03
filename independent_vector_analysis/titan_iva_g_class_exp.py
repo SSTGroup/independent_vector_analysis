@@ -10,10 +10,10 @@ from time import time
 from iva_g import iva_g
 from helpers_iva import whiten_data
 import cProfile
-from palm_iva_g_algebra_toolbox import *
-from palm_iva_g_problem_simulation import *
-from palm_iva_g_reg import *
-from palm_iva_g_class_algos import *
+from titan_iva_g_algebra_toolbox import *
+from titan_iva_g_problem_simulation import *
+from titan_iva_g_reg import *
+from titan_iva_g_class_algos import *
    
 class ComparisonExperimentIvaG:
 #On classe les résultats et les graphes dans une arborescence de 2 niveaux :

@@ -5,7 +5,7 @@ from tqdm import tqdm
 from time import time
 from iva_g import iva_g
 from helpers_iva import whiten_data
-from palm_iva_g_algebra_toolbox import *
+from titan_iva_g_algebra_toolbox import *
 import cProfile
 
 

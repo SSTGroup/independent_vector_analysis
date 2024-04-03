@@ -6,9 +6,9 @@ from iva_g import iva_g
 from helpers_iva import whiten_data
 from initializations import _jbss_sos, _cca
 import cProfile
-from palm_iva_g_algebra_toolbox import *
-from palm_iva_g_problem_simulation import *
-from palm_iva_g_lab import *
+from titan_iva_g_algebra_toolbox import *
+from titan_iva_g_problem_simulation import *
+from titan_iva_g_lab import *
 import dask as dk
 
 def cost_iva_g_reg(W,C,Lambda,alpha):
