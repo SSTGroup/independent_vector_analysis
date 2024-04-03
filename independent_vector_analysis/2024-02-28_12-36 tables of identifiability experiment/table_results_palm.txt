@@ -1,0 +1,24 @@
+\begin{table}[h!]
+\caption{palm}
+\vspace{0.4cm}
+\fontsize{6pt}{6pt}\selectfont
+\begin{tabular}{cccccccc}
+& & \multicolumn{3}{c}{$K$ = 2} & \multicolumn{3}{c}{$K$ = 5}\\
+ \cmidrule(lr){3-5} \cmidrule(lr){6-8}
+& & $N$ = 3 & $N$ = 5 & $N$ = 10 & $N$ = 3 & $N$ = 5 & $N$ = 10\\
+\midrule
+\multirow{3}{*}{\begin{tabular}{c} low identifiability \end{tabular}}& $\mu_{\rm ISI}$ & 4.19E-01 & 4.09E-01 & 3.82E-01 & 4.27E-01 & 4.03E-01 & 3.78E-01\\
+& $\sigma_{\rm ISI}$ & 1.43E-01 & 8.00E-02 & 3.28E-02 & 1.46E-01 & 8.54E-02 & 3.49E-02\\
+& $t(s)$ & \num{0.05} & \num{0.13} & \num{0.45} & \num{0.06} & \num{0.09} & \num{0.29}\\
+\midrule
+\multirow{3}{*}{\begin{tabular}{c} medium identifiability \end{tabular}}& $\mu_{\rm ISI}$ & 3.78E-01 & 3.87E-01 & 3.50E-01 & 3.11E-01 & \textbf{3.17E-01} & \textbf{3.58E-01}\\
+& $\sigma_{\rm ISI}$ & 1.45E-01 & 8.28E-02 & 4.01E-02 & 1.75E-01 & 1.17E-01 & 5.76E-02\\
+& $t(s)$ & \num{0.19} & \num{0.33} & \num{0.76} & \num{0.51} & \num{0.92} & \num{1.62}\\
+\midrule
+\multirow{3}{*}{\begin{tabular}{c} high identifiability \end{tabular}}& $\mu_{\rm ISI}$ & 8.69E-02 & 9.34E-02 & 1.03E-01 & 9.15E-03 & 9.83E-03 & 9.65E-03\\
+& $\sigma_{\rm ISI}$ & 8.68E-02 & 5.47E-02 & 3.40E-02 & 3.16E-03 & 2.27E-03 & 9.01E-04\\
+& $t(s)$ & \num{0.18} & \num{0.37} & \num{0.96} & \num{0.13} & \num{0.32} & \num{1.40}\\
+\bottomrule
+\\
+\end{tabular}
+\end{table}

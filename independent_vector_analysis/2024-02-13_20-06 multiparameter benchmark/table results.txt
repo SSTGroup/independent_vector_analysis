@@ -1,0 +1,64 @@
+\begin{table}[h!]
+\caption{blablabla}
+\vspace{0.4cm}
+\fontsize{5pt}{5pt}\selectfont
+\begin{tabular}{cm{0.5cm}m{0.5cm}cccccc}
+& & & \multicolumn{3}{c}{$K$ = 5} & \multicolumn{3}{c}{$K$ = 10}\\
+ \cmidrule(lr){4-6} \cmidrule(lr){7-9}
+& & & $N$ = 3 & $N$ = 5 & $N$ = 10 & $N$ = 3 & $N$ = 5 & $N$ = 10\\
+\midrule
+\multirow{12}{*}{\rotatebox[origin=c]{90}{\small{\textbf{TITAN-IVA-G}}}}& \multirow{3}{*}{\begin{tabular}{c} Case A \end{tabular}}& $\mu_{\rm ISI}$ & 5.41E-02 & \textbf{6.95E-02} & 1.05E-01 & \textbf{3.87E-02} & 4.99E-02 & 6.13E-02\\
+& & $\sigma_{\rm ISI}$ & 4.64E-02 & 2.93E-02 & 2.42E-02 & 3.10E-02 & 2.06E-02 & 1.36E-02\\
+& & $\mu_T$ & \textit{\textbf{0.19}} & \textit{\textbf{0.72}} & 4.17 & \textit{\textbf{0.84}} & \textit{\textbf{4.20}} & 39.66\\
+\cmidrule(lr){2-9}\\
+& \multirow{3}{*}{\begin{tabular}{c} Case B \end{tabular}}& $\mu_{\rm ISI}$ & 2.13E-02 & 2.11E-02 & 2.20E-02 & \textbf{1.36E-02} & \textbf{1.39E-02} & \textbf{1.41E-02}\\
+& & $\sigma_{\rm ISI}$ & 6.93E-03 & 4.50E-03 & 3.38E-03 & 2.73E-03 & 1.54E-03 & 7.14E-04\\
+& & $\mu_T$ & \textit{\textbf{0.07}} & \textit{\textbf{0.18}} & \textit{\textbf{0.92}} & \textit{\textbf{0.26}} & \textit{\textbf{0.80}} & \textit{\textbf{6.20}}\\
+\cmidrule(lr){2-9}\\
+& \multirow{3}{*}{\begin{tabular}{c} Case C \end{tabular}}& $\mu_{\rm ISI}$ & 4.28E-02 & 5.10E-02 & 6.12E-02 & 3.75E-02 & 3.45E-02 & 3.10E-02\\
+& & $\sigma_{\rm ISI}$ & 4.77E-02 & 2.40E-02 & 1.70E-02 & 6.96E-02 & 2.36E-02 & 7.87E-03\\
+& & $\mu_T$ & 0.45 & 1.45 & 7.52 & \textit{\textbf{1.86}} & 8.22 & 69.89\\
+\cmidrule(lr){2-9}\\
+& \multirow{3}{*}{\begin{tabular}{c} Case D \end{tabular}}& $\mu_{\rm ISI}$ & 9.87E-03 & 9.37E-03 & 9.39E-03 & \textbf{6.11E-03} & 6.18E-03 & \textbf{6.10E-03}\\
+& & $\sigma_{\rm ISI}$ & 3.82E-03 & 1.99E-03 & 1.03E-03 & 1.34E-03 & 6.52E-04 & 3.86E-04\\
+& & $\mu_T$ & 0.11 & \textit{\textbf{0.27}} & 1.31 & 0.41 & 1.30 & 9.93\\
+\bottomrule
+\\
+\midrule
+\multirow{12}{*}{\rotatebox[origin=c]{90}{\small{\textbf{IVA-G-V}}}}& \multirow{3}{*}{\begin{tabular}{c} Case A \end{tabular}}& $\mu_{\rm ISI}$ & \textbf{5.39E-02} & 7.83E-02 & \textbf{1.01E-01} & 3.99E-02 & \textbf{4.87E-02} & \textbf{5.54E-02}\\
+& & $\sigma_{\rm ISI}$ & 2.56E-02 & 3.04E-02 & 2.52E-02 & 3.08E-02 & 1.70E-02 & 1.03E-02\\
+& & $\mu_T$ & 0.40 & 0.76 & \textit{\textbf{1.77}} & 3.74 & 7.09 & 15.70\\
+\cmidrule(lr){2-9}\\
+& \multirow{3}{*}{\begin{tabular}{c} Case B \end{tabular}}& $\mu_{\rm ISI}$ & \textbf{2.12E-02} & \textbf{2.10E-02} & \textbf{2.17E-02} & \textbf{1.37E-02} & \textbf{1.39E-02} & \textbf{1.40E-02}\\
+& & $\sigma_{\rm ISI}$ & 7.00E-03 & 4.35E-03 & 2.28E-03 & 2.68E-03 & 1.56E-03 & 7.14E-04\\
+& & $\mu_T$ & 0.28 & 0.52 & 1.10 & 2.53 & 3.79 & 8.13\\
+\cmidrule(lr){2-9}\\
+& \multirow{3}{*}{\begin{tabular}{c} Case C \end{tabular}}& $\mu_{\rm ISI}$ & 3.93E-02 & \textbf{4.41E-02} & \textbf{4.60E-02} & \textbf{2.43E-02} & \textbf{2.56E-02} & \textbf{2.47E-02}\\
+& & $\sigma_{\rm ISI}$ & 1.81E-02 & 1.62E-02 & 8.74E-03 & 1.07E-02 & 9.48E-03 & 2.92E-03\\
+& & $\mu_T$ & \textit{\textbf{0.40}} & \textit{\textbf{0.78}} & \textit{\textbf{1.65}} & 3.67 & \textit{\textbf{5.98}} & \textit{\textbf{10.60}}\\
+\cmidrule(lr){2-9}\\
+& \multirow{3}{*}{\begin{tabular}{c} Case D \end{tabular}}& $\mu_{\rm ISI}$ & \textbf{9.72E-03} & \textbf{9.26E-03} & \textbf{9.27E-03} & \textbf{6.02E-03} & \textbf{6.07E-03} & \textbf{6.08E-03}\\
+& & $\sigma_{\rm ISI}$ & 3.55E-03 & 1.92E-03 & 9.25E-04 & 1.18E-03 & 5.70E-04 & 3.66E-04\\
+& & $\mu_T$ & 0.28 & 0.53 & \textit{\textbf{1.15}} & 0.87 & 1.62 & 4.79\\
+\bottomrule
+\\
+\midrule
+\multirow{12}{*}{\rotatebox[origin=c]{90}{\small{\textbf{IVA-G-N}}}}& \multirow{3}{*}{\begin{tabular}{c} Case A \end{tabular}}& $\mu_{\rm ISI}$ & 8.71E-02 & 1.07E-01 & 1.32E-01 & 1.71E-01 & 2.38E-01 & 2.43E-01\\
+& & $\sigma_{\rm ISI}$ & 8.83E-02 & 4.96E-02 & 3.13E-02 & 1.20E-01 & 1.14E-01 & 7.31E-02\\
+& & $\mu_T$ & 0.83 & 6.66 & 24.31 & 2.34 & 5.17 & \textit{\textbf{14.73}}\\
+\cmidrule(lr){2-9}\\
+& \multirow{3}{*}{\begin{tabular}{c} Case B \end{tabular}}& $\mu_{\rm ISI}$ & 2.17E-02 & 2.16E-02 & 2.20E-02 & 1.57E-02 & 1.47E-02 & 1.43E-02\\
+& & $\sigma_{\rm ISI}$ & 7.72E-03 & 4.54E-03 & 2.49E-03 & 3.53E-03 & 1.73E-03 & 7.92E-04\\
+& & $\mu_T$ & 0.21 & 1.71 & 6.45 & 0.94 & 2.07 & 6.56\\
+\cmidrule(lr){2-9}\\
+& \multirow{3}{*}{\begin{tabular}{c} Case C \end{tabular}}& $\mu_{\rm ISI}$ & \textbf{3.62E-02} & 4.67E-02 & 5.04E-02 & 8.49E-02 & 4.93E-02 & 3.42E-02\\
+& & $\sigma_{\rm ISI}$ & 1.78E-02 & 1.73E-02 & 1.03E-02 & 1.35E-01 & 3.17E-02 & 1.14E-02\\
+& & $\mu_T$ & 0.50 & 4.84 & 19.62 & 2.32 & 7.31 & 26.21\\
+\cmidrule(lr){2-9}\\
+& \multirow{3}{*}{\begin{tabular}{c} Case D \end{tabular}}& $\mu_{\rm ISI}$ & 9.98E-03 & \textbf{9.33E-03} & \textbf{9.30E-03} & 6.16E-03 & \textbf{6.06E-03} & \textbf{6.10E-03}\\
+& & $\sigma_{\rm ISI}$ & 3.83E-03 & 2.00E-03 & 9.32E-04 & 1.22E-03 & 5.83E-04 & 3.75E-04\\
+& & $\mu_T$ & \textit{\textbf{0.09}} & 0.55 & 1.79 & \textit{\textbf{0.33}} & \textit{\textbf{0.71}} & \textit{\textbf{2.04}}\\
+\bottomrule
+\\
+\end{tabular}
+\end{table}

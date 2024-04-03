@@ -1,0 +1,36 @@
+\begin{table}[h!]
+\caption{titan}
+\vspace{0.4cm}
+\fontsize{6pt}{6pt}\selectfont
+\begin{tabular}{cccccccc}
+& & \multicolumn{3}{c}{$K$ = 2} & \multicolumn{3}{c}{$K$ = 5}\\
+ \cmidrule(lr){3-5} \cmidrule(lr){6-8}
+& & $N$ = 3 & $N$ = 5 & $N$ = 10 & $N$ = 3 & $N$ = 5 & $N$ = 10\\
+\midrule
+\multirow{4}{*}{\begin{tabular}{c} low correlation low variability \end{tabular}}\\
+& $n_\W$& 5& 5& 5& 5& 5& 5\\
+& $\mu_{{\rm ISI}}$ & 1.10E-01 & 1.82E-01 & 2.24E-01 & \textbf{4.88E-02} & \textbf{7.50E-02} & 1.04E-01\\
+& $\sigma_{\rm ISI}$ & 8.12E-02 & 5.99E-02 & 3.62E-02 & 3.67E-02 & 3.28E-02 & 2.90E-02\\
+& $t(s)$ & \num{0.14} & \num{0.30} & \num{0.76} & \num{0.22} & \num{0.76} & \num{4.14}\\
+\midrule
+\multirow{4}{*}{\begin{tabular}{c} low correlation high variability \end{tabular}}\\
+& $n_\W$& 5& 5& 5& 5& 5& 5\\
+& $\mu_{{\rm ISI}}$ & 1.33E-01 & 1.26E-01 & 1.41E-01 & \textbf{2.05E-02} & \textbf{2.18E-02} & \textbf{2.20E-02}\\
+& $\sigma_{\rm ISI}$ & 1.03E-01 & 6.83E-02 & 3.76E-02 & 6.38E-03 & 4.09E-03 & 2.48E-03\\
+& $t(s)$ & \num{0.13} & \num{0.23} & \num{0.64} & \num{0.08} & \num{0.20} & \num{1.04}\\
+\midrule
+\multirow{4}{*}{\begin{tabular}{c} high correlation low variability \end{tabular}}\\
+& $n_\W$& 5& 5& 5& 5& 5& 5\\
+& $\mu_{{\rm ISI}}$ & 1.06E-01 & 1.60E-01 & 1.82E-01 & 4.39E-02 & 5.66E-02 & 6.65E-02\\
+& $\sigma_{\rm ISI}$ & 9.13E-02 & 5.83E-02 & 3.08E-02 & 6.46E-02 & 2.89E-02 & 1.84E-02\\
+& $t(s)$ & \num{0.20} & \num{0.42} & \num{1.05} & \num{0.47} & \num{1.41} & \num{7.43}\\
+\midrule
+\multirow{4}{*}{\begin{tabular}{c} high correlation high variability \end{tabular}}\\
+& $n_\W$& 5& 5& 5& 5& 5& 5\\
+& $\mu_{{\rm ISI}}$ & 7.95E-02 & 1.03E-01 & 1.00E-01 & 8.92E-03 & \textbf{9.46E-03} & 1.00E-02\\
+& $\sigma_{\rm ISI}$ & 9.53E-02 & 6.77E-02 & 3.08E-02 & 3.45E-03 & 2.12E-03 & 3.00E-03\\
+& $t(s)$ & \num{0.14} & \num{0.31} & \num{0.81} & \num{0.12} & \num{0.28} & \num{1.41}\\
+\bottomrule
+\\
+\end{tabular}
+\end{table}
