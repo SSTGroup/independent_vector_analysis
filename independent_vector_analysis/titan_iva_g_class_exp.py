@@ -147,7 +147,7 @@ class ComparisonExperimentIvaG:
                     file.write('\\\\\n')
             file.write('\\end{tabular}\n\\end{table}')
 
-    def make_charts(self):
+    def make_charts(self,full=False):
         output_folder = self.date + ' ' + self.name
         Ks,Ns = self.common_parameters
         for a,metaparam in enumerate(self.meta_parameters):
@@ -169,7 +169,27 @@ class ComparisonExperimentIvaG:
                     output_path = os.path.join(output_folder+'/charts/{}/N = {} K = {}'.format(self.meta_parameters_titles[a],N,K), filename)
                     fig.savefig(output_path,dpi=200,bbox_inches='tight')
                     plt.close(fig)
- 
+            if full:
+                fig,ax = plt.subplots(len(Ns),len(Ks),figsize=(12, 8))
+                fig.text(0.5, 0.04, '$T$ (s.)', ha='center', fontsize=self.title_fontsize)
+                fig.text(0.04, 0.5, '$ISI$ score', va='center', rotation='vertical', fontsize=self.title_fontsize)
+                plt.yscale('log')
+                for ik,K in enumerate(Ks):
+                    for jn,N in enumerate(Ns):
+                        if ik == 0:
+                            ax[jn,ik].set_title('N = {}'.format(N))
+                        for algo in self.algos:
+                            ax[jn,ik].errorbar(np.mean(algo.times[a,ik,jn,:]),np.mean(algo.results[a,ik,jn,:]),
+                                                yerr=np.std(algo.results[a,ik,jn,:]),xerr=np.std(algo.times[a,ik,jn,:]),
+                                                color=algo.color,label=algo.legend,elinewidth=2.5)
+                if self.legend:
+                    fig.legend(loc=2,fontsize=self.legend_fontsize)
+                filename = 'comparison {}.png'.format(self.meta_parameters_titles[a])
+                output_path = os.path.join(output_folder+'/charts/{}'.format(self.meta_parameters_titles[a]), filename)
+                fig.savefig(output_path,dpi=200,bbox_inches='tight')
+                plt.close(fig)
+                    
+                        
     def store_in_folder(self):
         output_folder = self.date + ' ' + self.name
         os.makedirs(output_folder,exist_ok=True)

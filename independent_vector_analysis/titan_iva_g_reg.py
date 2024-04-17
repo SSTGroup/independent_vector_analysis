@@ -11,32 +11,32 @@ from titan_iva_g_problem_simulation import *
 from titan_iva_g_lab import *
 import dask as dk
 
-def cost_iva_g_reg(W,C,Lambda,alpha):
+def cost_iva_g_reg(W,C,Rx,alpha):
     K,_,N = C.shape
     res = -np.sum(np.log(np.linalg.det(np.moveaxis(C,2,0))))/2
     for k in range(K):
         res += 0.5*alpha*np.sum((C[k,k,:]-1)**2)    
     W_bd = block_diag(W)
     W_bdT = np.moveaxis(W_bd,0,1)
-    res += np.trace(np.sum(np.einsum('kKn, KNn, Ni, ijn -> kjn',C,W_bd,Lambda,W_bdT),axis=2))/2
+    res += np.trace(np.sum(np.einsum('kKn, KNn, Ni, ijn -> kjn',C,W_bd,Rx,W_bdT),axis=2))/2
     res -= np.sum(np.log(np.abs(np.linalg.det(np.moveaxis(W,2,0)))))
     return res
 # On ne traite pas le cas où une valeur singulière est inférieure à epsilon car ça ne peut
 # pas arriver à cause du prox utilisé sauf à l'initialisation éventuellement mais on le néglige
 
-def grad_H_W(W,C,Lambda):
+def grad_H_W(W,C,Rx):
     N,_,K = W.shape
     grad = np.zeros((N,N,K))
     W_bd = block_diag(W)
-    grad_tmp = np.einsum('kKn, KNn, Ni-> kin',C,W_bd,Lambda)
+    grad_tmp = np.einsum('kKn, KNn, Ni-> kin',C,W_bd,Rx)
     for k in range(K):
         grad[:,:,k] = grad_tmp[k,k*N:(k+1)*N,:].T
     return grad
 
-def grad_H_C(W,Lambda):
+def grad_H_C(W,Rx):
     W_bd = block_diag(W)
     W_bdT = np.moveaxis(W_bd,0,1)
-    grad = np.einsum('kNn, Nv, vin-> kin',W_bd,Lambda,W_bdT)/2
+    grad = np.einsum('kNn, Nv, vin-> kin',W_bd,Rx,W_bdT)/2
     return sym(grad)
 
 def prox_f(W,c_w,mode='full'):
@@ -71,10 +71,10 @@ def prox_g(C,c_c,eps):
     C_new = np.moveaxis(C_new,0,2)
     return sym(C_new)
 
-def grad_H_C_reg(W,C,Lambda,alpha):
+def grad_H_C_reg(W,C,Rx,alpha):
     W_bd = block_diag(W)
     W_bdT = np.moveaxis(W_bd,1,0)
-    grad = np.einsum('kNn, Nv, vin-> kin',W_bd,Lambda,W_bdT)/2
+    grad = np.einsum('kNn, Nv, vin-> kin',W_bd,Rx,W_bdT)/2
     K,_,N = C.shape
     for k in range(K):
         grad[k,k,:] += alpha*(C[k,k,:] - 1)
@@ -93,7 +93,7 @@ def palm_iva_g_reg(X,alpha=1,gamma_c=1.99,gamma_w=0.99,max_iter=5000,
         raise('gamma_w must be in ]0,1[ if not adaptative')
     if adaptative_gamma_w:
         overhead = 0
-    W,C = initialize(N,K,init_method=init_method,Winit=Winit,Cinit=Cinit,X=X,Lambda=Lambda,seed=seed)
+    W,C = initialize(N,K,init_method=init_method,Winit=Winit,Cinit=Cinit,X=X,Rx=Lambda,seed=seed)
     N_step = 0
     c_c = gamma_c/alpha
     #On initialise les listes utiles pour tracer les courbes. Par défaut on garde les critères pour les deux blocs, on pourra calculer le max a posteriori si besoin
@@ -153,33 +153,35 @@ def palm_iva_g_reg(X,alpha=1,gamma_c=1.99,gamma_w=0.99,max_iter=5000,
     return report_variables(W,C,N_step,max_iter,cost,ISI,diffs_W,diffs_C,track_diff,track_cost,track_isi)
 
 def titan_iva_g_reg(X,alpha=1,gamma_c=1,gamma_w=0.99,max_iter=20000,
-                         max_iter_int=100,crit_int=1e-7,crit_ext=1e-10,init_method='random',Winit=None,Cinit=None,
+                         max_iter_int=100,crit_int=1e-10,crit_ext=1e-10,init_method='random',Winit=None,Cinit=None,
                          eps=10**(-12),track_cost=False,seed=None,
-                         track_isi=False,track_diff=False,B=None,C0=0.999,nu=0.5,
+                         track_isi=False,track_diff=False,B=None,nu=0.5,
                          max_iter_int_C=1,adaptative_gamma_w=False,
-                         gamma_w_decay=0.9):
+                         gamma_w_decay=0.9,test=False):
+    N,_,K = X.shape
+    C0 = min(gamma_c**2/K**2,1.001*(1/gamma_w - 1))
     alpha, gamma_c, gamma_w = to_float64(alpha, gamma_c, gamma_w)
     # if (not adaptative_gamma_w) and gamma_w > 1:
-    #     raise('gamma_w must be in ]0,1[ if not adaptative')
-    N,_,K = X.shape
-    Lambda = cov_X(X)
-    lam = spectral_norm_extracted(Lambda,K,N)
-    W,C = initialize(N,K,init_method=init_method,Winit=Winit,Cinit=Cinit,X=X,Lambda=Lambda,seed=seed)
+    #     raise('gamma_w must be in (0,1) if not adaptative')
+    Rx = cov_X(X)
+    rho_Rx = spectral_norm_extracted(Rx,K,N)  #Empiriquement, prend des valeurs entre 1 et 3 après whitening
+    W,C = initialize(N,K,init_method=init_method,Winit=Winit,Cinit=Cinit,X=X,Rx=Rx,seed=seed)
+    l_ = compute_l_(alpha, gamma_w, C0, K, rho_Rx)
     C_lat,C_bar,C_tilde,C_prev,W_lat,W_bar,W_tilde,W_prev = C.copy(),C.copy(),C.copy(),C.copy(),W.copy(),W.copy(),W.copy(),W.copy()
     N_step = 0
-    c_c = gamma_c/alpha
+    c_c = gamma_c/max(alpha,l_)
     #On initialise les listes utiles pour tracer les courbes. Par défaut on garde les critères pour les deux blocs, on pourra calculer le max a posteriori si besoin
     diffs_W,diffs_C,ISI,cost,shifts_W = [],[],[],[],[]
     # shift_W = 1
     if track_cost:
-        cost = [cost_iva_g_reg(W,C,Lambda,alpha)]
+        cost = [cost_iva_g_reg(W,C,Rx,alpha)]
     if track_isi:
         if np.any(B == None):
             raise("you must provide B to track ISI")
         else:
             ISI = [joint_isi(W,B)]
     diff_ext = np.infty
-    L_w = lipschitz(C,lam)
+    L_w = max(l_,lipschitz(C,rho_Rx))
     times = [0]
     t0 = time()
     # dW = np.zeros_like((W))
@@ -187,7 +189,7 @@ def titan_iva_g_reg(X,alpha=1,gamma_c=1,gamma_w=0.99,max_iter=20000,
     while diff_ext > crit_ext and N_step < max_iter:
         C_old0 = C.copy()
         L_w_prev = L_w
-        L_w = lipschitz(C,lam)
+        L_w = max(l_,lipschitz(C,rho_Rx)) #Empiriquement le module de Lipschitz semble prendre des valeurs entre 1 et 20 dans nos exemples
         diff_int = np.infty
         diff_int_C = np.infty #here
         W_old0 = W.copy()
@@ -201,7 +203,7 @@ def titan_iva_g_reg(X,alpha=1,gamma_c=1,gamma_w=0.99,max_iter=20000,
             tau_w = beta_w
             W_tilde = W + beta_w*(W-W_prev)
             W_bar = W + tau_w*(W-W_prev)
-            grad_W = grad_H_W(W_bar,C,Lambda)
+            grad_W = grad_H_W(W_bar,C,Rx)
             W_lat = W_tilde - c_w*grad_W
             W_prev = W.copy()
             W = prox_f(W_lat,c_w)
@@ -213,9 +215,9 @@ def titan_iva_g_reg(X,alpha=1,gamma_c=1,gamma_w=0.99,max_iter=20000,
             #     shift_W = np.sum(dW*dW_prev)/(np.linalg.norm(dW)*np.linalg.norm(dW_prev))
             #     shifts_W.append(shift_W)
             # if adaptative_gamma_w:
-                # if cost_iva_g_reg(W,C,Lambda,alpha) > cost_iva_g_reg(W_prev,C,Lambda,alpha):
+                # if cost_iva_g_reg(W,C,Rx,alpha) > cost_iva_g_reg(W_prev,C,Rx,alpha):
                 # if shift_W < 0:
-                    # print(cost_iva_g_reg(W,C,Lambda,alpha))
+                    # print(cost_iva_g_reg(W,C,Rx,alpha))
                     # gamma_w = gamma_w*gamma_w_decay
                 # if shift_W > 0.99:
                 #     gamma_w = gamma_w/gamma_w_decay
@@ -223,14 +225,14 @@ def titan_iva_g_reg(X,alpha=1,gamma_c=1,gamma_w=0.99,max_iter=20000,
             #     return report_variables(W,C,N_step,max_iter,cost,ISI,diffs_W,diffs_C,track_diff,track_cost,track_isi)    
         # print(N_step_int)
         # if track_cost:
-        #     cost.append(cost_iva_g_reg(W,C,Lambda,alpha))
+        #     cost.append(cost_iva_g_reg(W,C,Rx,alpha))
         while diff_int_C > crit_int and N_step_int_C < max_iter_int_C: #here
             # C_old = C.copy() #here
             beta_c = np.sqrt(C0*nu*(1-nu))
             tau_c = beta_c
             C_tilde = C + beta_c*(C-C_prev)
             C_bar = C + tau_c*(C-C_prev)
-            grad_C = grad_H_C_reg(W,C_bar,Lambda,alpha)
+            grad_C = grad_H_C_reg(W,C_bar,Rx,alpha)
             C_lat = C_tilde - c_c*grad_C
             C_prev = C.copy()
             C = prox_g(C_lat,c_c,eps)
@@ -238,7 +240,7 @@ def titan_iva_g_reg(X,alpha=1,gamma_c=1,gamma_w=0.99,max_iter=20000,
             N_step_int_C += 1 #here
         diff_ext = max(diff_criteria(C,C_old0),diff_criteria(W,W_old0))
         if track_cost:
-            cost.append(cost_iva_g_reg(W,C,Lambda,alpha))
+            cost.append(cost_iva_g_reg(W,C,Rx,alpha))
         # diff_W = diff_criteria(W,W_old)
         # diff_C = diff_criteria(C,C_old)
         # # diff = max(diff_W,diff_C)
@@ -248,8 +250,12 @@ def titan_iva_g_reg(X,alpha=1,gamma_c=1,gamma_w=0.99,max_iter=20000,
         if track_isi:
             ISI.append(joint_isi(W,B))
         times.append(time()-t0)
-        N_step += 1
+        N_step += 1      
     return report_variables(W,C,N_step,max_iter,times,cost,ISI,diffs_W,diffs_C,track_diff,track_cost,track_isi,shifts_W)
+
+def compute_l_(alpha, gamma_w, C0, K, rho_Rx):
+    l_ = 1.001*C0*max((gamma_w*alpha)/(1-gamma_w),rho_Rx*2*K*(1+np.sqrt(2)))
+    return l_
 
 def block_titan_palm_iva_g_reg(X,idx_W,alpha=1,gamma_c=1,gamma_w=0.99,C0=0.999,nu=0.5,
                                max_iter=20000,max_iter_int=100,crit_int=1e-9,crit_ext=1e-9,
@@ -259,7 +265,7 @@ def block_titan_palm_iva_g_reg(X,idx_W,alpha=1,gamma_c=1,gamma_w=0.99,C0=0.999,n
     N,_,K = X.shape
     Lambda = cov_X(X)
     lam = spectral_norm_extracted(Lambda,K,N)
-    W_full, C = initialize(N,K,init_method,Winit=Winit,Cinit=Cinit,X=X,Lambda=Lambda,seed=seed)
+    W_full, C = initialize(N,K,init_method,Winit=Winit,Cinit=Cinit,X=X,Rx=Lambda,seed=seed)
     W_blocks = full_to_blocks(W_full,idx_W,K)
     C_lat,C_bar,C_tilde,C_prev = C.copy(),C.copy(),C.copy(),C.copy()
     W_lat,W_bar,W_tilde,W_prev = W_full.copy(),W_full.copy(),W_full.copy(),W_full.copy()
@@ -329,17 +335,17 @@ def block_titan_palm_iva_g_reg(X,idx_W,alpha=1,gamma_c=1,gamma_w=0.99,C0=0.999,n
         N_step += 1
     return report_variables(W_full,C,N_step,max_iter,cost,ISI,diffs_W,diffs_C,track_diff,track_cost,track_isi)
 
-def initialize(N,K,init_method,Winit=None,Cinit=None,X=None,Lambda=None,seed=None):
+def initialize(N,K,init_method,Winit=None,Cinit=None,X=None,Rx=None,seed=None):
     if Winit is not None and Cinit is not None:
         W,C = Winit.copy(),Cinit.copy()
     elif init_method == 'Jdiag':
-        W,C = Jdiag_init(X,N,K,Lambda)
+        W,C = Jdiag_init(X,N,K,Rx)
     elif init_method == 'random':
         C = make_Sigma(K,N,rank=K+10,seed=seed)
-        W = make_A(K,N,seed=seed)        
+        W = make_A(K,N,seed=seed)      
     return W,C
 
-def Jdiag_init(X,N,K,Lambda):
+def Jdiag_init(X,N,K,Rx):
     if K > 2:
         # initialize with multi-set diagonalization (orthogonal solution)
         W = _jbss_sos(X, 0, 'whole')
@@ -347,7 +353,7 @@ def Jdiag_init(X,N,K,Lambda):
         W = _cca(X)
     W_bd = block_diag(W)
     W_bdT = np.moveaxis(W_bd,0,1)
-    Sigma_tmp = np.einsum('KNn, Ni, ijn -> Kjn',W_bd,Lambda,W_bdT)
+    Sigma_tmp = np.einsum('KNn, Ni, ijn -> Kjn',W_bd,Rx,W_bdT)
     C = np.zeros((K,K,N))
     for n in range(N):
         C[:,:,n] = np.linalg.inv(Sigma_tmp[:,:,n])
@@ -360,10 +366,7 @@ def to_float64(alpha, gamma_c, gamma_w):
     return alpha,gamma_c,gamma_w
 
 def report_variables(W,C,N_step,max_iter,times,cost,ISI,diffs_W,diffs_C,track_diff,track_cost,track_isi,shifts_W):
-    if N_step < max_iter:
-        met_limit = True
-    else:
-        met_limit = False
+    met_limit = (N_step < max_iter)
     if track_diff:
         # diffs = (diffs_W,diffs_C)
         diffs = diffs_W
