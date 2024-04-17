@@ -141,37 +141,35 @@ class PalmIvaG(IvaGAlgorithms):
 class TitanIvaG(IvaGAlgorithms):    
 
     def __init__(self,color,name='titan',legend='TITAN-IVA-G',nu=0.5,max_iter=20000,max_iter_int=15,max_iter_int_C=1,
-                 crit_ext=1e-10,crit_int=1e-10,gamma_w=0.99,gamma_c=1,seed=None,test=False):
+                 crit_ext=1e-10,crit_int=1e-10,gamma_w=0.99,gamma_c=1,alpha=1,seed=None):
         super().__init__(name=name,legend=legend,color=color,max_iter=max_iter,crit_ext=crit_ext)
         self.crit_int = crit_int
         self.max_iter_int = max_iter_int
         self.max_iter_int_C = max_iter_int_C
         self.nu = nu
-        # self.C0 = C0
-        # self.alpha = alpha
+        self.alpha = alpha
         self.alternated = True
         self.gamma_w = gamma_w
         self.gamma_c = gamma_c
         self.seed = seed
-        self.test = test
 
     def solve(self,X,Winit=None,Cinit=None):
-        W,_,_,_ = titan_iva_g_reg(X,gamma_w=self.gamma_w,gamma_c=self.gamma_c,
+        W,_,_,_ = titan_iva_g_reg(X,alpha=self.alpha,gamma_w=self.gamma_w,gamma_c=self.gamma_c,
                                      crit_ext=self.crit_ext,crit_int=self.crit_int,
                                      max_iter=self.max_iter,max_iter_int=self.max_iter_int,
                                      max_iter_int_C=self.max_iter_int_C,nu=self.nu,
-                                     Winit=Winit,Cinit=Cinit,seed=self.seed,test = self.test)
+                                     Winit=Winit,Cinit=Cinit,seed=self.seed)
         return W 
 
     def solve_with_isi(self,X,A,Winit=None,Cinit=None):
-        _,_,_,_,isi = titan_iva_g_reg(X,gamma_w=self.gamma_w,gamma_c=self.gamma_c,
+        _,_,_,_,isi = titan_iva_g_reg(X,alpha=self.alpha,gamma_w=self.gamma_w,gamma_c=self.gamma_c,
                                      crit_ext=self.crit_ext,crit_int=self.crit_int,nu=self.nu,
                                      max_iter=self.max_iter,max_iter_int=self.max_iter_int,
                                      Winit=Winit,Cinit=Cinit,seed=self.seed,track_isi=True,B=A)
         return isi
 
     def solve_with_cost(self,X,Winit=None,Cinit=None):
-        _,_,_,times,cost = titan_iva_g_reg(X,gamma_w=self.gamma_w,gamma_c=self.gamma_c,
+        _,_,_,times,cost = titan_iva_g_reg(X,alpha=self.alpha,gamma_w=self.gamma_w,gamma_c=self.gamma_c,
                                      crit_ext=self.crit_ext,crit_int=self.crit_int,nu=self.nu,
                                      max_iter=self.max_iter,max_iter_int=self.max_iter_int,
                                      Winit=Winit,Cinit=Cinit,seed=self.seed,track_cost=True)

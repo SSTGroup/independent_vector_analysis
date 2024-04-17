@@ -69,17 +69,16 @@ metaparameters_multiparam = get_metaparameters(rhos,lambdas)
 # exp1.make_tables()
 
 
-algo_titan = TitanIvaG((0,0.5,0),name='titan',gamma_w=0.99,crit_ext=1e-10,crit_int=1e-10,test=True)
-algo_titan2 = TitanIvaG((0,0.5,0),name='titan2',gamma_w=0.99,crit_ext=1e-10,crit_int=1e-10,test=False)
-# algo_iva_g_n = IvaGN((0,0,1),name='iva_g_n',crit_ext=1e-7)
+algo_titan = TitanIvaG((0,0.5,0),name='titan',gamma_w=0.99,crit_ext=1e-10,crit_int=1e-10)
+algo_iva_g_n = IvaGN((0,0,1),name='iva_g_n',crit_ext=1e-7)
 algo_iva_g_v = IvaGV((1,0,0),name='iva_g_v',crit_ext=1e-6)
 
 
-algos = [algo_titan,algo_titan2,algo_iva_g_v] #,algo_iva_g_n]
+algos = [algo_titan,algo_iva_g_v,algo_iva_g_n]
 # algos = [algo_titan0,algo_iva_g_v]
 
 exp2 = ComparisonExperimentIvaG('multiparameter benchmark',algos,metaparameters_multiparam,metaparameters_titles_multiparam,
-                                common_parameters,'multiparam',title_fontsize=30,legend_fontsize=6,N_exp=3,charts=False,legend=False)
+                                common_parameters,'multiparam',title_fontsize=30,legend_fontsize=6,N_exp=100,charts=False,legend=False)
 exp2.compute()
 # exp2.get_data_from_folder('2024-04-09_13-53')
 # exp2.make_table()

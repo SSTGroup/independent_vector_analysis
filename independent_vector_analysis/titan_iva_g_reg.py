@@ -157,7 +157,7 @@ def titan_iva_g_reg(X,alpha=1,gamma_c=1,gamma_w=0.99,max_iter=20000,
                          eps=10**(-12),track_cost=False,seed=None,
                          track_isi=False,track_diff=False,B=None,nu=0.5,
                          max_iter_int_C=1,adaptative_gamma_w=False,
-                         gamma_w_decay=0.9,test=False):
+                         gamma_w_decay=0.9):
     N,_,K = X.shape
     C0 = min(gamma_c**2/K**2,1.001*(1/gamma_w - 1))
     alpha, gamma_c, gamma_w = to_float64(alpha, gamma_c, gamma_w)
