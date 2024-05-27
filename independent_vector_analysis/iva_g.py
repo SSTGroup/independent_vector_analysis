@@ -153,6 +153,7 @@ def iva_g(X, opt_approach='newton', complex_valued=False, circular=False, whiten
     """
 
     start = time.time()
+    times = [0]
 
     if X.ndim != 3:
         raise AssertionError('X must have dimensions N x T x K.')
@@ -290,6 +291,7 @@ def iva_g(X, opt_approach='newton', complex_valued=False, circular=False, whiten
     # to store the change in W in each iteration
     W_change = []
 
+    t0 = time.time()
     # Main Iteration Loop
     for iteration in range(max_iter):
         term_criterion = 0
@@ -484,6 +486,7 @@ def iva_g(X, opt_approach='newton', complex_valued=False, circular=False, whiten
             else:
                 print(f'Step {iteration}: W change: {term_criterion}, Cost: {cost[iteration]}')
 
+        times.append(time.time()-t0)
     # Finish Display
     if iteration == 0 and verbose:
         if supply_A:
@@ -521,6 +524,6 @@ def iva_g(X, opt_approach='newton', complex_valued=False, circular=False, whiten
         print(f"IVA-G finished after {(end - start) / 60} minutes with {iteration} iterations.")
 
     if return_W_change:
-        return W, cost, Sigma_N, isi, W_change
+        return W, cost, Sigma_N, isi, times, W_change
     else:
-        return W, cost, Sigma_N, isi
+        return W, cost, Sigma_N, isi, times

@@ -13,12 +13,10 @@ def sym(A):
         return (A.T+A)/2
     else:
         return (A + np.moveaxis(A,0,1))/2
-    
+
 def cov_X(X):
-    N,T,K = X.shape
-    vec_X = np.moveaxis(X,2,0).reshape(K*N,T)
-    Lambda = vec_X.dot(vec_X.T)/T
-    return Lambda
+    _,T,_ = X.shape
+    return np.einsum('NTK,MTJ->KJNM',X,X)/T
 
 def spectral_norm(M):
     if M.ndim == 2:
@@ -26,22 +24,12 @@ def spectral_norm(M):
     else:
         return np.max(np.linalg.norm(M,ord=2,axis=(0,1)))
     
-def spectral_norm_extracted(Lambda,K,N):
-    norms = []
-    for j in range(K):
-        norms.append(np.linalg.norm(Lambda[:,j*N:(j+1)*N],ord=2))
-    return np.max(norms)
+def spectral_norm_extracted(Rx,K,N):
+    return np.max(np.linalg.norm(np.reshape(np.moveaxis(Rx,1,0),(K,K*N,N)),ord=2,axis=(1,2)))
 
 def smallest_singular_value(C):
     _,s,_ = np.linalg.svd(np.moveaxis(C,2,0))
     return np.min(s)
-
-def block_diag(W):
-    N,N,K = W.shape
-    W_bd = np.zeros((K,K*N,N))
-    for k in range(K):
-        W_bd[k,k*N:(k+1)*N,:] = W[:,:,k].T
-    return W_bd
 
 def blocks_to_full(W_blocks,K,N):
     W_full = np.zeros((N,N,K))
@@ -103,90 +91,31 @@ def decrease(cost,verbose=0):
 def diff_criteria(A,B,mode='full'):
     
 # calculates the distance between two tensors or matrices A and B taking into account the scaling ambiguity
+    N = A.shape[0]
     if mode == 'full':
         if A.shape != B.shape:
             raise("A and B must be of the same dimension")
         elif A.ndim < 2 or A.ndim > 3:
             raise("Only tensors of order 2 or 3 are accepted")
-        res = 0
         D = A-B
-        if A.ndim == 2:
-            N,_ = A.shape
-            for n in range(N):
-                res = max(res,np.dot(D[n,:],D[n,:]))
-            return res/(2*N)
-        else:
-            N,_,K = A.shape
-            for k in range(K):
-                for n in range(N):
-                    res = max(res,np.dot(D[n,:,k],D[n,:,k]))
-            return res/(2*N)
-    elif mode =='blocks':
-        # A et B sont des listes de K matrices, 
-        # elles mêmes implémentées par des listes de blocs dont la somme des tailles vaut N
-        res = 0
-        if len(A) != len(B):
-            raise("A and B must be of the same dimension")
-        for k,A_k in enumerate(A):
-            B_k = B[k]
-            if len(A_k) != len(B_k):
-                raise("A_k and B_k must have the same blocks")
-            for l,A_kl in enumerate(A_k):
-                B_kl = B_k[l]
-                if A_kl.shape != B_kl.shape:
-                    raise("A_k and B_k must have the same blocks")
-                N_kl,_ = A_kl.shape
-                for n in range(N_kl):
-                    res = max(res,np.dot(A_kl[n,:],B_kl[n,:])/(2*N))
-        return res
+        return np.max(np.sum(D**2, axis=1))/(2*N)
+    # elif mode =='blocks':
+    #     # A et B sont des listes de K matrices, 
+    #     # elles mêmes implémentées par des listes de blocs dont la somme des tailles vaut N
+    #     res = 0
+    #     if len(A) != len(B):
+    #         raise("A and B must be of the same dimension")
+    #     for k,A_k in enumerate(A):
+    #         B_k = B[k]
+    #         if len(A_k) != len(B_k):
+    #             raise("A_k and B_k must have the same blocks")
+    #         for l,A_kl in enumerate(A_k):
+    #             B_kl = B_k[l]
+    #             if A_kl.shape != B_kl.shape:
+    #                 raise("A_k and B_k must have the same blocks")
+    #             N_kl,_ = A_kl.shape
+    #             for n in range(N_kl):
+    #                 res = max(res,np.dot(A_kl[n,:],B_kl[n,:])/(2*N))
+    #     return res
 
-        
-
-  
-    
-# # fig,ax = plt.subplots((3,2))
-
-# # ax[0,0].plot()
-    
-# # Définition des fonctions affines
-# def f1(x):
-#     return min(8 + x,20)
-
-# def f2(x):
-#     return min(6 + 2*x/3,20)
-
-# def f3(x):
-#     return min(2 + 3*x/4,20)
-
-# def f4(x):
-#     return min(10 +x/2,20)
-
-# def f5(x):
-#     return min(12+x,20)
-
-# def f6(x):
-#     return min(7+2*x,20)
-
-# # Création de la grille de sous-graphiques
-# fig, axs = plt.subplots(2, 3, figsize=(10, 7), sharex=True, sharey=True)
-# names = ['statistics','algebra','measure theory','optimisation','machine learning','complex analysis']
-# # Boucle pour tracer chaque fonction sur son sous-graphique
-# for i, func in enumerate([f1, f2, f3, f4, f5, f6]):
-#     # Définition du domaine
-#     x = np.linspace(0,20,1000)
-    
-#     # Tracer la fonction sur le sous-graphique correspondant
-#     ax = axs[i // 3, i % 3]
-#     ax.plot(x, [func(xi) for xi in x], label= names[i])
-#     ax.grid(True)
-#     ax.axhline(0, color='black',linewidth=2)
-#     ax.axhline(20, color='black',linewidth=1)
-#     ax.axhline(10, color='black',linewidth=1)
-#     ax.axvline(0, color='black',linewidth=2)
-#     ax.set_title(names[i])
-
-# # Affichage des labels et du titre
-# fig.suptitle('Work rentability diagrams')
-# plt.tight_layout()
-# plt.show()
-
+ 

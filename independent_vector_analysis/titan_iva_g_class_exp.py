@@ -108,7 +108,7 @@ class ComparisonExperimentIvaG:
                 file.write('\\midrule\n')
                 file.write('\\multirow{{{}}}{{*}}{{\\rotatebox[origin=c]{{90}}{{\\small{{\\textbf{{{}}}}}}}}}'.format(3*len(self.meta_parameters),algo.legend))
                 for a,metaparam in enumerate(self.meta_parameters):
-                    file.write('& \\multirow{{{}}}{{*}}{{\\begin{{tabular}}{{c}} {} \\end{{tabular}}}}& $\\mu_{{\\rm ISI}}$'.format(2+self.std+2*self.median,self.meta_parameters_titles[a]))
+                    file.write('& \\multirow{{{}}}{{*}}{{\\begin{{tabular}}{{c}} {} \\end{{tabular}}}}& $\\mu_{{\\rm jISI}}$'.format(2+self.std+2*self.median,self.meta_parameters_titles[a]))
                     for ik,K in enumerate(Ks):
                         for jn,N in enumerate(Ns):
                             if np.mean(algo.results[a,ik,jn,:]) <= best_results[a,ik,jn] + tol_res:
@@ -117,19 +117,19 @@ class ComparisonExperimentIvaG:
                                 file.write(' & {:.2E}'.format(np.mean(algo.results[a,ik,jn,:])))
                     file.write('\\\\\n')
                     if self.median:
-                        file.write('& & $\\widehat{\\mu}_{\\rm ISI}$')
+                        file.write('& & $\\widehat{\\mu}_{\\rm jISI}$')
                         for ik,K in enumerate(Ks):
                             for jn,N in enumerate(Ns):
                                 file.write(' & {:.2E}'.format(np.median(algo.results[a,ik,jn,:])))
                         file.write('\\\\\n')
                     if self.std:
-                        file.write('& & $\\sigma_{\\rm ISI}$')
+                        file.write('& & $\\sigma_{\\rm jISI}$')
                         for ik,K in enumerate(Ks):
                             for jn,N in enumerate(Ns):
                                 file.write(' & {:.2E}'.format(np.std(algo.results[a,ik,jn,:])))
                         file.write('\\\\\n')
                     if self.median:
-                        file.write('& & $\\widehat{\\sigma}_{\\rm ISI}$')
+                        file.write('& & $\\widehat{\\sigma}_{\\rm jISI}$')
                         for ik,K in enumerate(Ks):
                             for jn,N in enumerate(Ns):
                                 file.write(' & {:.2E}'.format(np.median(np.abs(algo.results[a,ik,jn,:]-np.mean(algo.results[a,ik,jn,:])))))
@@ -158,7 +158,7 @@ class ComparisonExperimentIvaG:
                     os.makedirs(output_folder+'/charts/{}/N = {} K = {}'.format(self.meta_parameters_titles[a],N,K))
                     fig,ax = plt.subplots()
                     ax.set_xlabel('$T$ (s.)',fontsize=self.title_fontsize,labelpad=0)
-                    ax.set_ylabel('$ISI$ score',fontsize=self.title_fontsize,labelpad=0)
+                    ax.set_ylabel('$jISI$ score',fontsize=self.title_fontsize,labelpad=0)
                     for algo in self.algos:
                         ax.errorbar(np.mean(algo.times[a,ik,jn,:]),np.mean(algo.results[a,ik,jn,:]),
                                                 yerr=np.std(algo.results[a,ik,jn,:]),xerr=np.std(algo.times[a,ik,jn,:]),
@@ -181,7 +181,7 @@ class ComparisonExperimentIvaG:
             if full:
                 fig,ax = plt.subplots(len(Ns),len(Ks),figsize=(12, 8))
                 fig.text(0.5, 0.04, '$T$ (s.)', ha='center', fontsize=self.title_fontsize)
-                fig.text(0.04, 0.5, '$ISI$ score', va='center', rotation='vertical', fontsize=self.title_fontsize)
+                fig.text(0.04, 0.5, '$jISI$ score', va='center', rotation='vertical', fontsize=self.title_fontsize)
                 plt.yscale('log')
                 for ik,K in enumerate(Ks):
                     for jn,N in enumerate(Ns):
@@ -197,8 +197,7 @@ class ComparisonExperimentIvaG:
                 output_path = os.path.join(output_folder+'/charts/{}'.format(self.meta_parameters_titles[a]), filename)
                 fig.savefig(output_path,dpi=200,bbox_inches='tight')
                 plt.close(fig)
-                    
-                        
+                                          
     def store_in_folder(self):
         output_folder = self.date + ' ' + self.name
         os.makedirs(output_folder,exist_ok=True)
@@ -233,17 +232,17 @@ class ComparisonExperimentIvaG:
                         Cinit = make_Sigma(K,N,rank=K+10)
                         for algo in self.algos:
                             algo.fill_experiment(X,A,(a,ik,jn,exp),Winit.copy(),Cinit.copy())
-                            print(a,ik,jn,algo.name + ' : ',algo.results[a,ik,jn,exp],algo.times[a,ik,jn,exp] )
+                            print(a,' K =',K,' N =',N,algo.name + ' : ',algo.results[a,ik,jn,exp],algo.times[a,ik,jn,exp] )
         self.store_in_folder()
 
-    def draw_isi_evolutions(self):
+    def draw_jisi_evolutions(self):
         output_folder = self.date + ' ' + self.name
         os.makedirs(output_folder,exist_ok=True)
         Ks,Ns = self.common_parameters
         for a,metaparam in enumerate(self.meta_parameters):
             fig_global,axes = plt.subplots(len(Ks),len(Ns))
             fig_global.supxlabel('Iteration (external loop)',fontsize=self.title_fontsize)
-            fig_global.supylabel('ISI score',fontsize=self.title_fontsize)
+            fig_global.supylabel('jISI score',fontsize=self.title_fontsize)
             for ik,K in enumerate(Ks):
                 for jn,N in enumerate(Ns):
                     if ik == 0:
@@ -253,7 +252,7 @@ class ComparisonExperimentIvaG:
                     os.makedirs(output_folder+'/{}/N = {} K = {}'.format(self.meta_parameters_titles[a],N,K))
                     fig,ax = plt.subplots()
                     fig.supxlabel('Iteration (external loop)',fontsize=self.title_fontsize)
-                    fig.supylabel('ISI score',fontsize=self.title_fontsize)
+                    fig.supylabel('jISI score',fontsize=self.title_fontsize)
                     ax.set_yscale('log')
                     axes[ik,jn].set_yscale('log')
                     X,A = generate_whitened_problem(self.T,metaparam,K,N,mode=self.mode)
@@ -261,14 +260,14 @@ class ComparisonExperimentIvaG:
                     Cinit = make_Sigma(K,N)
                     for algo in self.algos:
                         t = -time()
-                        isi = algo.solve_with_isi(self,X,A,Winit,Cinit)
+                        jisi = algo.solve_with_jisi(self,X,A,Winit,Cinit)
                         t += time()
-                        res = isi[-1]
-                        ax.plot(isi,color=algo.color,label=algo.legend +' time = {:.2E}, ISI = {:.3f}'.format(t,res),linewidth=0.5)
-                        axes[ik,jn].plot(isi,color=algo.color,label=algo.legend +' time = {:.2E}, ISI = {:.3f}'.format(t,res),linewidth=0.5)
+                        res = jisi[-1]
+                        ax.plot(jisi,color=algo.color,label=algo.legend +' time = {:.2E}, jISI = {:.3f}'.format(t,res),linewidth=0.5)
+                        axes[ik,jn].plot(jisi,color=algo.color,label=algo.legend +' time = {:.2E}, jISI = {:.3f}'.format(t,res),linewidth=0.5)
                     ax.legend(loc=1,fontsize=self.legend_fontsize)
                     for extension in ['.eps','.png']:
-                        filename = 'isi evolutions' + extension
+                        filename = 'jisi evolutions' + extension
                         output_path = os.path.join(output_folder+'/{}/N = {} K = {}'.format(self.meta_parameters_titles[a],N,K), filename)
                         fig.savefig(output_path,dpi=200)
             fig_global.subplots_adjust(wspace=0.2,hspace=0.4)

@@ -98,15 +98,12 @@ def create_clusters_W(K,N):
     return Idx_W
 
 
+K = 10
+N = 10
+Sigma = make_Sigma(K,N,rank=K+10)
+A = make_A()
 
 
-
-
-# K = 10
-# N = 10
-# mu=[0.6,0.7]
-# lambda_=0.25
-# Sigma = make_Sigma_3(K,N,rank=K+10,epsilon = 0.5,mu=mu,lambda_=lambda_)
 # print('identifiability = ',identifiability_level(Sigma))
 
 # epsilon = 0.01
