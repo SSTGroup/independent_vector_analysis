@@ -159,7 +159,7 @@ def titan_iva_g_reg(X,alpha=1,gamma_c=1,gamma_w=0.99,max_iter=20000,
                          max_iter_int_C=1,adaptative_gamma_w=False,
                          gamma_w_decay=0.9):
     N,_,K = X.shape
-    C0 = min(gamma_c**2/K**2,1.001*(1/gamma_w - 1))
+    C0 = min(gamma_c**2/K**2,0.999*(1/gamma_w - 1))
     alpha, gamma_c, gamma_w = to_float64(alpha, gamma_c, gamma_w)
     # if (not adaptative_gamma_w) and gamma_w > 1:
     #     raise('gamma_w must be in (0,1) if not adaptative')
@@ -169,7 +169,7 @@ def titan_iva_g_reg(X,alpha=1,gamma_c=1,gamma_w=0.99,max_iter=20000,
     l_ = compute_l_(alpha, gamma_w, C0, K, rho_Rx)
     C_lat,C_bar,C_tilde,C_prev,W_lat,W_bar,W_tilde,W_prev = C.copy(),C.copy(),C.copy(),C.copy(),W.copy(),W.copy(),W.copy(),W.copy()
     N_step = 0
-    c_c = gamma_c/max(alpha,l_)
+    c_c = gamma_c/max(alpha,(l_*(1/gamma_w - 1)))
     #On initialise les listes utiles pour tracer les courbes. Par défaut on garde les critères pour les deux blocs, on pourra calculer le max a posteriori si besoin
     diffs_W,diffs_C,ISI,cost,shifts_W = [],[],[],[],[]
     # shift_W = 1

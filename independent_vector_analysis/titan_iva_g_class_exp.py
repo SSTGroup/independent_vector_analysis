@@ -31,7 +31,7 @@ class ComparisonExperimentIvaG:
 # différemment par exemple
       
     def __init__(self,name,algos,meta_parameters,meta_parameters_titles,common_parameters,mode='multiparam',
-                 T=10000,N_exp=100,table=False,table_fontsize=5,median=False,charts=False,legend=True,
+                 T=10000,N_exp=100,table=False,table_fontsize=5,median=False,std=False,charts=False,legend=True,
                  legend_fontsize=5,title_fontsize=10):  
         self.algos = algos
         self.N_exp = N_exp
@@ -46,6 +46,7 @@ class ComparisonExperimentIvaG:
         self.table = table
         self.table_fontsize = table_fontsize
         self.median = median
+        self.std = std
         self.charts = charts
         self.legend = legend
         self.title_fontsize = title_fontsize
@@ -107,7 +108,7 @@ class ComparisonExperimentIvaG:
                 file.write('\\midrule\n')
                 file.write('\\multirow{{{}}}{{*}}{{\\rotatebox[origin=c]{{90}}{{\\small{{\\textbf{{{}}}}}}}}}'.format(3*len(self.meta_parameters),algo.legend))
                 for a,metaparam in enumerate(self.meta_parameters):
-                    file.write('& \\multirow{{{}}}{{*}}{{\\begin{{tabular}}{{c}} {} \\end{{tabular}}}}& $\\mu_{{\\rm ISI}}$'.format(3+2*self.median,self.meta_parameters_titles[a]))
+                    file.write('& \\multirow{{{}}}{{*}}{{\\begin{{tabular}}{{c}} {} \\end{{tabular}}}}& $\\mu_{{\\rm ISI}}$'.format(2+self.std+2*self.median,self.meta_parameters_titles[a]))
                     for ik,K in enumerate(Ks):
                         for jn,N in enumerate(Ns):
                             if np.mean(algo.results[a,ik,jn,:]) <= best_results[a,ik,jn] + tol_res:
@@ -121,11 +122,12 @@ class ComparisonExperimentIvaG:
                             for jn,N in enumerate(Ns):
                                 file.write(' & {:.2E}'.format(np.median(algo.results[a,ik,jn,:])))
                         file.write('\\\\\n')
-                    file.write('& & $\\sigma_{\\rm ISI}$')
-                    for ik,K in enumerate(Ks):
-                        for jn,N in enumerate(Ns):
-                            file.write(' & {:.2E}'.format(np.std(algo.results[a,ik,jn,:])))
-                    file.write('\\\\\n')
+                    if self.std:
+                        file.write('& & $\\sigma_{\\rm ISI}$')
+                        for ik,K in enumerate(Ks):
+                            for jn,N in enumerate(Ns):
+                                file.write(' & {:.2E}'.format(np.std(algo.results[a,ik,jn,:])))
+                        file.write('\\\\\n')
                     if self.median:
                         file.write('& & $\\widehat{\\sigma}_{\\rm ISI}$')
                         for ik,K in enumerate(Ks):
@@ -142,9 +144,9 @@ class ComparisonExperimentIvaG:
                     file.write('\\\\\n')
                     if a == len(self.meta_parameters)-1:
                         file.write('\\bottomrule\n')
+                        file.write('\\\\\n')
                     else:
                         file.write('\\cmidrule(lr){{2-{}}}'.format(3+n_cols))
-                    file.write('\\\\\n')
             file.write('\\end{tabular}\n\\end{table}')
 
     def make_charts(self,full=False):
@@ -163,6 +165,13 @@ class ComparisonExperimentIvaG:
                                                 color=algo.color,label=algo.legend,elinewidth=2.5)
                     ax.set_yscale('log')
                     ax.grid(which='both')
+                    # yticks = ax.get_yticks(minor=True)
+                    # print(yticks)
+                    # yticklabels = ['{:.0e}'.format(tick) for tick in yticks]
+                    # ax.set_yticklabels(yticklabels)
+                    # xticks = ax.get_xticks()
+                    # xticklabels = ['{:.0e}'.format(tick) for tick in xticks]
+                    # ax.set_xticklabels(xticklabels)
                     if self.legend:
                         fig.legend(loc=2,fontsize=self.legend_fontsize)
                     filename = 'comparison {} N = {} K = {}'.format(self.meta_parameters_titles[a],N,K)

@@ -189,3 +189,4 @@ def diff_criteria(A,B,mode='full'):
 # fig.suptitle('Work rentability diagrams')
 # plt.tight_layout()
 # plt.show()
+

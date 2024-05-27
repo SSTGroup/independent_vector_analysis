@@ -38,9 +38,9 @@ lambdas = [lambda_1,lambda_2]
 # identifiability_levels = [1e-2,1e-1,1])
 # identifiability_levels_names = ['low identifiability','medium identifiability','high identifiability']
 # Ks = [2,5,10]
-# Ns = [3,5,10]
+Ns = [3,5,10]
 Ks = [5,10]
-Ns = [5,10]
+# Ns = [5,10]
 common_parameters = [Ks,Ns]
 metaparameters_titles_multiparam = ['Case A','Case B','Case C','Case D']
 
@@ -54,7 +54,7 @@ def get_metaparameters(rhos,lambdas):
 # ------------------------------------------------------------------------------------------------------------------------------                
 # ------------------------------------------------------------------------------------------------------------------------------------------
 
-label_size = 30
+label_size = 60
 mpl.rcParams['xtick.labelsize'] = label_size
 mpl.rcParams['ytick.labelsize'] = label_size
 plt.rcParams['text.usetex'] = True
@@ -78,10 +78,10 @@ algos = [algo_titan,algo_iva_g_v,algo_iva_g_n]
 # algos = [algo_titan0,algo_iva_g_v]
 
 exp2 = ComparisonExperimentIvaG('multiparameter benchmark',algos,metaparameters_multiparam,metaparameters_titles_multiparam,
-                                common_parameters,'multiparam',title_fontsize=30,legend_fontsize=6,N_exp=100,charts=False,legend=False)
-exp2.compute()
-# exp2.get_data_from_folder('2024-04-09_13-53')
+                                common_parameters,'multiparam',title_fontsize=50,legend_fontsize=6,N_exp=100,charts=False,legend=False)
+# exp2.compute()
+exp2.get_data_from_folder('2024-04-17_18-24')
 # exp2.make_table()
-# exp2.make_charts(full=True)
+exp2.make_charts(full=False)
 
 
