@@ -7,7 +7,7 @@ def readme():
 
 
 setup(name='independent_vector_analysis',
-      version='0.3.3',
+      version='0.3.4',
       description='Implementation of IVA-G and IVA-L-SOS',
       long_description=readme(),
       long_description_content_type='text/markdown',
