@@ -106,7 +106,7 @@ def generate_sources(rho, N, T, K):
 
 def MGGD_generation(N, dim=None, correlation_structure=None, rho=None, beta=1, cov=None):
     """
-    Contains six functions that can be used to generate multivariate generalized Gaussian
+    Contains different functions that can be used to generate multivariate generalized Gaussian
     distributed (MGGD) sources. If cov is given, none of the functions will be used but data will
     be generated using cov.
     
