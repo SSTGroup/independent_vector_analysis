@@ -180,18 +180,12 @@ def _bss_isi(W, A, s=None):
     Code is converted to Python by Isabell Lehmann (isabell.lehmann at sst.upb.de)
     """
 
-    # generalized permutation invariant flag (default=False), only used when s is None
-    gen_perm_inv_flag = False
-
     if W.ndim == 2 and A.ndim == 2:
         if s is None:
             # Traditional metric, user provided W & A separately
             G = W @ A
             M, N = G.shape
             G_abs = np.abs(G)
-            if gen_perm_inv_flag:
-                # normalization by row
-                G_abs /= np.amax(G_abs, axis=1, keepdims=True)
         else:
             # Equalize energy associated with each estimated source and true source.
             y = W @ A @ s
@@ -219,9 +213,9 @@ def _bss_isi(W, A, s=None):
 
     elif W.ndim == 3 and A.ndim == 3:
         # IVA/GroupICA/MCCA Metrics
-        # For this we want to average over the K groups as well as provide the additional
+        # For this we want to average over the K groups (avg ISI)  as well as provide the additional
         # measure of solution to local permutation ambiguity (achieved by averaging the K
-        # demixing-mixing matrices and then computing the ISI of this matrix).
+        # demixing-mixing matrices and then computing the ISI of this matrix (joint ISI)).
 
         N, M, K = W.shape
         if M != N:
@@ -229,15 +223,11 @@ def _bss_isi(W, A, s=None):
 
         avg_isi = 0
         G_abs_total = np.zeros((N, N))
-        G = np.zeros((N, N, K), dtype=W.dtype)
         for k in range(K):
             if s is None:
                 # Traditional metric, user provided W & A separately
                 G_k = W[:, :, k] @ A[:, :, k]
                 G_abs = np.abs(G_k)
-                if gen_perm_inv_flag:
-                    # normalization by row
-                    G_abs /= np.amax(G_abs, axis=1, keepdims=True)
             else:
 
                 # Equalize energy associated with each estimated source and true source.
@@ -252,8 +242,6 @@ def _bss_isi(W, A, s=None):
                                                          A[:, :, k].T).T  # A @ np.linalg.inv(D)
                 G_abs = np.abs(G_k)
 
-            G[:, :, k] = G_k
-
             G_abs_total += G_abs
 
             for n in range(N):
@@ -264,17 +252,12 @@ def _bss_isi(W, A, s=None):
 
         avg_isi /= (2 * N * (N - 1) * K)
 
-        G_abs = np.copy(G_abs_total)
-        if gen_perm_inv_flag:
-            # normalization by row
-            G_abs /= np.amax(G_abs, axis=1, keepdims=True)
-
         joint_isi = 0
         for n in range(N):
-            joint_isi += np.sum(G_abs[n, :]) / np.max(G_abs[n, :]) - 1
+            joint_isi += np.sum(G_abs_total[n, :]) / np.max(G_abs_total[n, :]) - 1
 
         for m in range(N):
-            joint_isi += np.sum(G_abs[:, m]) / np.max(G_abs[:, m]) - 1
+            joint_isi += np.sum(G_abs_total[:, m]) / np.max(G_abs_total[:, m]) - 1
 
         joint_isi /= (2 * N * (N - 1))
 
