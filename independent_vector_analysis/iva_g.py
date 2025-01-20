@@ -49,7 +49,8 @@ from .initializations import _jbss_sos, _cca
 
 def iva_g(X, opt_approach='newton', complex_valued=False, circular=False, whiten=True,
           verbose=False, A=None, W_init=None, jdiag_initW=False, max_iter=1024,
-          W_diff_stop=1e-6, alpha0=1.0, return_W_change=False):
+          W_diff_stop=1e-6, alpha0=1.0, return_W_change=False,
+          orthogonal=False):
     """
     Implementation of all the second-order (Gaussian) independent vector analysis (IVA) algorithms.
     Namely real-valued and complex-valued with circular and non-circular using Newton, gradient,
