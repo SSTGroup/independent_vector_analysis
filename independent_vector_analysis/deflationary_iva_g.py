@@ -131,8 +131,8 @@ def deflationary_iva_g(X, whiten=True,
     R_xx = np.zeros((N, N, K, K), dtype=X.dtype)
     for k1 in range(K):
         for k2 in range(k1, K):
-            R_xx[:, :, k1, k2] = 1 / T * X[:, :, k1] @ np.conj(X[:, :, k2].T)
-            R_xx[:, :, k2, k1] = np.conj(R_xx[:, :, k1, k2].T)  # R_xx is Hermitian
+            R_xx[:, :, k1, k2] = 1 / T * X[:, :, k1] @ X[:, :, k2].T
+            R_xx[:, :, k2, k1] = R_xx[:, :, k1, k2].T  # R_xx is symmetric
 
     # Check rank of data-covariance matrix: should be full rank, if not we inflate (this is ad hoc)
     # concatenate all covariance matrices in a big matrix
@@ -205,9 +205,8 @@ def deflationary_iva_g(X, whiten=True,
 
         # Loop over each SCV
         for n in range(N):
-            Wn = W[n, :, :].flatten(order='F')
 
-            # Efficient version of Sigma_n = 1/T * Y_n @ np.conj(Y_n.T) with Y_n = W_n @ X_n
+            # Efficient version of Sigma_n = 1/T * Y_n @ Y_n.T with Y_n = W_n @ X_n
             Sigma_n = np.eye(K)
 
             for k1 in range(K):
@@ -229,7 +228,7 @@ def deflationary_iva_g(X, whiten=True,
                 grad[n, :, k] = - hnk[:, k] / (W[n, :, k] @ hnk[:, k])
 
                 for kk in range(K):
-                    grad[n, :, k] += R_xx[:, :, k, kk] @ np.conj(W[n, :, kk]) * Sigma_inv[kk, k]
+                    grad[n, :, k] += R_xx[:, :, k, kk] @ W[n, :, kk] * Sigma_inv[kk, k]
 
             # Compute SCV Hessian
             for k1 in range(K):
@@ -253,7 +252,7 @@ def deflationary_iva_g(X, whiten=True,
 
         for k in range(K):
             term_criterion = np.maximum(term_criterion, np.amax(
-                    1 - np.abs(np.diag(W_old[:, :, k] @ np.conj(W[:, :, k].T)))))
+                1 - np.abs(np.diag(W_old[:, :, k] @ W[:, :, k].T))))
 
         W_change.append(term_criterion)
 
@@ -288,7 +287,7 @@ def deflationary_iva_g(X, whiten=True,
         # Scale demixing vectors to generate unit variance sources
         for n in range(N):
             for k in range(K):
-                W[n, :, k] /= np.sqrt(W[n, :, k] @ R_xx[:, :, k, k] @ np.conj(W[n, :, k]))
+                W[n, :, k] /= np.sqrt(W[n, :, k] @ R_xx[:, :, k, k] @ W[n, :, k])
 
     # Resort order of SCVs: Order the components from most to least ill-conditioned
     P_xx = None
