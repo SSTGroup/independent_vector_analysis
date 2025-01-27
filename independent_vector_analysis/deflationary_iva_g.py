@@ -251,11 +251,6 @@ def deflationary_iva_g(X, whiten=True,
             for k in range(K):
                 W[n, :, k] = _normalize_column_vectors(Wn[:, k])
 
-        if orthogonal:
-            # make W orthogonal using Polar decomposition
-            for k in range(K):
-                W[:, :, k] = np.linalg.solve(sc.linalg.sqrtm(W[:, :, k] @ W[:, :, k].T), W[:, :, k])
-
         for k in range(K):
             term_criterion = np.maximum(term_criterion, np.amax(
                     1 - np.abs(np.diag(W_old[:, :, k] @ np.conj(W[:, :, k].T)))))
@@ -272,8 +267,6 @@ def deflationary_iva_g(X, whiten=True,
         elif term_criterion > blowup or np.isnan(cost[iteration]):
             for k in range(K):
                 W[:, :, k] = np.eye(N) + 0.1 * np.random.randn(N, N)
-                if orthogonal:
-                    W[:,:,k] = np.linalg.solve(sc.linalg.sqrtm(W[:, :, k] @ W[:, :, k].T), W[:, :, k])
             if verbose:
                 print('W blowup, restart with new initial value.')
 
