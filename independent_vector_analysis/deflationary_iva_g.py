@@ -9,9 +9,8 @@ from .initializations import _jbss_sos, _cca
 
 
 def deflationary_iva_g(X, whiten=True,
-          verbose=False, W_init=None, jdiag_initW=False, max_iter=1024,
-          W_diff_stop=1e-6, alpha0=1.0, return_W_change=False,
-          orthogonal=False):
+                       verbose=False, W_init=None, jdiag_initW=False, max_iter=1024,
+                       W_diff_stop=1e-6, alpha0=1.0, return_W_change=False, orthogonal=False, deflationary=False):
     """
     Implementation of all the second-order (Gaussian) independent vector analysis (IVA) algorithms.
     Namely real-valued and complex-valued with circular and non-circular using Newton, gradient,
@@ -249,9 +248,13 @@ def deflationary_iva_g(X, whiten=True,
         # update W^[k]
         for k in range(K):
             U_k = U[:, k * N:(k + 1) * N]
-            W[:, :, k] -= alpha0 * U_k  # non-orthogonal update
-            for n in range(N):
-                W[n, :, k] = _normalize_column_vectors(W[n, :, k])  # make vectors unit-norm
+            if orthogonal:
+                E_k = U_k @ W[:, :, k].T - W[:, :, k] @ U_k.T  # project U^[k] on nearest skew-symmetric matrix
+                W[:, :, k] -= alpha0 * E_k @ W[:,:,k]
+            else:  # non-orthogonal update
+                W[:, :, k] -= alpha0 * U_k
+                for n in range(N):
+                    W[n, :, k] = _normalize_column_vectors(W[n, :, k])  # make vectors unit-norm
 
         for k in range(K):
             term_criterion = np.maximum(term_criterion, np.amax(
