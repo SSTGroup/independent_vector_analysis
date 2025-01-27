@@ -147,7 +147,6 @@ def deflationary_iva_g(X, whiten=True,
             R_xx_all.reshape(R_xx.shape[0], R_xx.shape[2], R_xx.shape[1], R_xx.shape[3], order='F'),
             [0, 2, 1, 3], [0, 1, 2, 3])
 
-
     # Initializations
 
     # Initialize W
@@ -186,9 +185,6 @@ def deflationary_iva_g(X, whiten=True,
     cost = np.zeros(max_iter)
     cost_const = K * np.log(2 * np.pi * np.exp(1))  # local constant
 
-    grad = np.zeros((N, K))
-    H = np.zeros((N * K, N * K))
-
     # to store the change in W in each iteration
     W_change = []
 
@@ -203,6 +199,9 @@ def deflationary_iva_g(X, whiten=True,
 
         Q = 0
         R = 0
+
+        grad = np.zeros((N, N, K))
+        H = np.zeros((N, N * K, N * K))
 
         # Loop over each SCV
         for n in range(N):
@@ -227,24 +226,25 @@ def deflationary_iva_g(X, whiten=True,
                 # Analytic derivative of cost function with respect to vn
                 # Code below is efficient implementation of computing the gradient, which is
                 # independent of T
-                grad[:, k] = - hnk[:, k] / (W[n, :, k] @ hnk[:, k])
+                grad[n, :, k] = - hnk[:, k] / (W[n, :, k] @ hnk[:, k])
 
                 for kk in range(K):
-                        grad[:, k] += R_xx[:, :, k, kk] @ np.conj(W[n, :, kk]) * Sigma_inv[kk, k]
+                    grad[n, :, k] += R_xx[:, :, k, kk] @ np.conj(W[n, :, kk]) * Sigma_inv[kk, k]
 
             # Compute SCV Hessian
             for k1 in range(K):
-                H[k1 * N:k1 * N + N, k1 * N:k1 * N + N] = \
+                H[n, k1 * N:k1 * N + N, k1 * N:k1 * N + N] = \
                     Sigma_inv[k1, k1] * R_xx[:, :, k1, k1] + np.outer(
                         hnk[:, k1], hnk[:, k1]) / (hnk[:, k1] @ W[n, :, k1]) ** 2
 
                 for k2 in range(k1 + 1, K):
                     Hs = Sigma_inv[k1, k2] * R_xx[:, :, k2, k1].T
-                    H[k1 * N: k1 * N + N, k2 * N: k2 * N + N] = Hs
-                    H[k2 * N: k2 * N + N, k1 * N: k1 * N + N] = Hs.T
+                    H[n, k1 * N: k1 * N + N, k2 * N: k2 * N + N] = Hs
+                    H[n, k2 * N: k2 * N + N, k1 * N: k1 * N + N] = Hs.T
 
+        for n in range(N):  # add this line here to update W^[k] after calculating gradient and Hessian for each n
             # Newton Update
-            Wn -= alpha0 * np.linalg.solve(H, grad.flatten('F'))
+            Wn -= alpha0 * np.linalg.solve(H[n, :, :], grad[n, :].flatten('F'))
 
             # Store Updated W
             Wn = np.reshape(Wn, (N, K), 'F')
