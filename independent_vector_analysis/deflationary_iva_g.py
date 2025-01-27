@@ -243,7 +243,8 @@ def deflationary_iva_g(X, whiten=True,
 
         for n in range(N):  # add this line here to update W^[k] after calculating gradient and Hessian for each n
             # Newton Update
-            Wn -= alpha0 * np.linalg.solve(H[n, :, :], grad[n, :].flatten('F'))
+            Wn = W[n, :, :].flatten(order='F')
+            Wn -= alpha0 * np.linalg.solve(H[n, :, :], grad[n, :, :].flatten('F'))
 
             # Store Updated W
             Wn = np.reshape(Wn, (N, K), 'F')
