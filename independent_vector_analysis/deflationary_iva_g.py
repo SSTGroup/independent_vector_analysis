@@ -241,15 +241,17 @@ def deflationary_iva_g(X, whiten=True,
                     H[n, k1 * N: k1 * N + N, k2 * N: k2 * N + N] = Hs
                     H[n, k2 * N: k2 * N + N, k1 * N: k1 * N + N] = Hs.T
 
-        for n in range(N):  # add this line here to update W^[k] after calculating gradient and Hessian for each n
-            # Newton Update
-            Wn = W[n, :, :].flatten(order='F')
-            Wn -= alpha0 * np.linalg.solve(H[n, :, :], grad[n, :, :].flatten('F'))
+        # concatenate the update rules in one big matrix. Each NxN block belongs to one W^[k]
+        U = np.zeros((N, N * K))
+        for n in range(N):
+            U[n, :] = np.linalg.solve(H[n, :, :], grad[n, :, :].flatten('F'))
 
-            # Store Updated W
-            Wn = np.reshape(Wn, (N, K), 'F')
-            for k in range(K):
-                W[n, :, k] = _normalize_column_vectors(Wn[:, k])
+        # update W^[k]
+        for k in range(K):
+            U_k = U[:, k * N:(k + 1) * N]
+            W[:, :, k] -= alpha0 * U_k  # non-orthogonal update
+            for n in range(N):
+                W[n, :, k] = _normalize_column_vectors(W[n, :, k])  # make vectors unit-norm
 
         for k in range(K):
             term_criterion = np.maximum(term_criterion, np.amax(
