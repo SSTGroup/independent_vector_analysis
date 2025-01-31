@@ -76,27 +76,16 @@ def consistent_iva(X, which_iva='iva_g', n_runs=20, parallel=True, **kwargs):
 
     Returns
     -------
-    W : np.ndarray
-        demixing matrix of dimensions N x N x K
 
-    W_change : list
-        change in W for each iteration
-
-    cross_isi_jnt : np.ndarray
-        cross joint isi for each run. Only returned if return_cross_isi==True.
-
-
-    Returns
-    -------
     iva_results : dict
         - 'W' : estimated demixing matrix of most consistent run of dimensions N x N x K
         - 'W_change' : change in W for each iteration of most consistent run
         - 'S' : estimated sources of dimensions N x T x K
         - 'A' : estimated mixing matrix of dimensions N x N x K
         - 'scv_cov' : covariance matrices of the SCVs, of dimensions K x K x N
-        - 'cross_isi' : cross joint isi for each run
+        - 'cross_isi' : cross joint joint_isi for each run
         - 'cost' : cost of each run
-        - 'isi' : isi for each run if true A is supplied, else None
+        - 'joint_isi' : joint_isi for each run if true A is supplied, else None
 
 
     Notes
@@ -113,21 +102,21 @@ def consistent_iva(X, which_iva='iva_g', n_runs=20, parallel=True, **kwargs):
     # calculate demixing matrices for several runs
     if parallel:
         if which_iva == 'iva_g':
-            W, cost, _, isi, W_change = zip(*Parallel(n_jobs=multiprocessing.cpu_count())(
+            W, cost, _, joint_isi, W_change = zip(*Parallel(n_jobs=multiprocessing.cpu_count())(
                 delayed(iva_g)(X, return_W_change=True, **kwargs) for i in tqdm(range(n_runs))))
         elif which_iva == 'iva_l_sos':
-            W, cost, _, isi, W_change = zip(*Parallel(n_jobs=multiprocessing.cpu_count())(
+            W, cost, _, joint_isi, W_change = zip(*Parallel(n_jobs=multiprocessing.cpu_count())(
                 delayed(iva_l_sos)(X, return_W_change=True, **kwargs) for i in tqdm(range(n_runs))))
         else:
             raise AssertionError("which_iva must be 'iva_g' or 'iva_l_sos'")
         cost = [c[-1] for c in cost]
-        if isi[0] is not None:
-            isi = [i[-1] for i in isi]
+        if joint_isi[0] is not None:
+            joint_isi = [i[-1] for i in joint_isi]
 
     else:
         W = []
         cost = []
-        isi = []
+        joint_isi = []
         W_change = []
         for run in tqdm(range(n_runs)):
             if which_iva == 'iva_g':
@@ -138,19 +127,20 @@ def consistent_iva(X, which_iva='iva_g', n_runs=20, parallel=True, **kwargs):
                 raise AssertionError("which_iva must be 'iva_g' or 'iva_l_sos'")
             W.append(temp[0])
             cost.append(temp[1])
-            isi.append(temp[3])
+            joint_isi.append(temp[3])
             W_change.append(temp[4])
 
         cost = [c[-1] for c in cost]
-        if isi[0] is not None:
-            isi = [i[-1] for i in isi]
+        if joint_isi[0] is not None:
+            joint_isi = [i[-1] for i in joint_isi]
 
-    # use cross joint isi to find most consistent run
+    # use cross joint joint_isi to find most consistent run
     selected_run, _, cross_jnt_isi, _ = _run_selection_cross_isi(W)
 
     W = W[selected_run]
     W_change = W_change[selected_run]
-
+    joint_isi = joint_isi[selected_run]
+    cost = cost[selected_run]
     # get dimensions
     N, T, K = X.shape
 
@@ -173,7 +163,7 @@ def consistent_iva(X, which_iva='iva_g', n_runs=20, parallel=True, **kwargs):
 
     # results
     iva_results = {'W': W, 'S': S, 'A': A_hat, 'scv_cov': scv_cov, 'W_change': W_change,
-                   'cross_isi': cross_jnt_isi, 'cost': cost, 'isi': isi}
+                   'cross_isi': cross_jnt_isi, 'cost': cost, 'joint_isi': joint_isi}
 
     return iva_results
 
