@@ -51,9 +51,9 @@ def _normalize_column_vectors(x):
 def _decouple_trick(W, n, Q=None, R=None):
     """
     Computes the H vector for the decoupling trick [1] of the nth row of W.
-    There are many possible methods for computing H. This algorithm just implements the method in
-    [1] (in the MATLAB version, there are more methods implemented): A recursive QR algorithm is
-    used to compute H.
+    There are many possible methods for computing H. This algorithm implements two of the methods in [1]:
+    the default QR approach, and a recursive QR algorithm to compute H.
+    (in the MATLAB version, there are more methods implemented)
 
 
     Parameters
@@ -101,32 +101,40 @@ def _decouple_trick(W, n, Q=None, R=None):
         raise AssertionError('Assuming W is square matrix.')
     H = np.zeros((N, K), dtype=W.dtype)
 
-    # use QR recursive method
-    if n == 0:
-        Q_ = np.zeros((N, N, K), dtype=W.dtype)
-        R_ = np.zeros((N, N - 1, K), dtype=W.dtype)
-    else:
-        Q_ = np.copy(Q)
-        R_ = np.copy(R)
-
-    for k in range(K):
+    if Q is not None:
+        # use QR recursive method
         if n == 0:
-            W_tilde = W[1:N, :, k]
-            Q_[:, :, k], R_[:, :, k] = np.linalg.qr(np.conj(W_tilde.T), mode='complete')
+            Q_ = np.zeros((N, N, K), dtype=W.dtype)
+            R_ = np.zeros((N, N - 1, K), dtype=W.dtype)
         else:
-            n_last = n - 1
-            e_last = np.zeros(N - 1, dtype=W.dtype)
-            e_last[n_last] = 1
+            Q_ = np.copy(Q)
+            R_ = np.copy(R)
 
-            # e_last.shape and R.shape[1], W.shape[1] and Q.shape[1] must be equal
-            Q_[:, :, k], R_[:, :, k] = sc.linalg.qr_update(Q_[:, :, k], R_[:, :, k],
-                                                           -np.conj(W[n, :, k]), e_last)
-            Q_[:, :, k], R_[:, :, k] = sc.linalg.qr_update(Q_[:, :, k], R_[:, :, k],
-                                                           np.conj(W[n_last, :, k]), e_last)
+        for k in range(K):
+            if n == 0:
+                W_tilde = W[1:N, :, k]
+                Q_[:, :, k], R_[:, :, k] = np.linalg.qr(np.conj(W_tilde.T), mode='complete')
+            else:
+                n_last = n - 1
+                e_last = np.zeros(N - 1, dtype=W.dtype)
+                e_last[n_last] = 1
 
-        H[:, k] = Q_[:, -1, k]
+                # e_last.shape and R.shape[1], W.shape[1] and Q.shape[1] must be equal
+                Q_[:, :, k], R_[:, :, k] = sc.linalg.qr_update(Q_[:, :, k], R_[:, :, k],
+                                                               -np.conj(W[n, :, k]), e_last)
+                Q_[:, :, k], R_[:, :, k] = sc.linalg.qr_update(Q_[:, :, k], R_[:, :, k],
+                                                               np.conj(W[n_last, :, k]), e_last)
 
-    return H, Q_, R_
+            H[:, k] = Q_[:, -1, k]
+
+        return H, Q_, R_
+    else:  # use (default) QR approach
+        for k in range(K):
+            W_k_minus_n = np.delete(W[:, :, k], n, 0)  # delete nth row of W^[k]
+            Q, _ = np.linalg.qr(np.conj(W_k_minus_n).T, mode='complete')
+            H[:, k] = Q[:, -1]  # should be orthogonal to w_1^[k], ..., w_{n-1}^[k], w_{n+1}^[k], ..., w_N^[k]
+
+        return H
 
 
 def _bss_isi(W, A, s=None):
