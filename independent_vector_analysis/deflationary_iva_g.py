@@ -1,16 +1,14 @@
-
 import numpy as np
 import scipy as sc
 import time
 
-from .helpers_iva import _normalize_column_vectors, _decouple_trick, _bss_isi, whiten_data, \
-    _resort_scvs
+from .helpers_iva import _normalize_column_vectors, _decouple_trick, whiten_data, _resort_scvs
 from .initializations import _jbss_sos, _cca
 
 
 def deflationary_iva_g(X, whiten=True,
                        verbose=False, W_init=None, jdiag_initW=False, max_iter=1024,
-                       W_diff_stop=1e-6, alpha0=1.0, return_W_change=False, orthogonal=False, deflationary=False):
+                       W_diff_stop=1e-6, alpha0=1.0, return_W_change=False):
     """
     Implementation of all the second-order (Gaussian) independent vector analysis (IVA) algorithms.
     Namely real-valued and complex-valued with circular and non-circular using Newton, gradient,
@@ -187,23 +185,19 @@ def deflationary_iva_g(X, whiten=True,
     # to store the change in W in each iteration
     W_change = []
 
-    # Main Iteration Loop
-    for iteration in range(max_iter):
-        term_criterion = 0
+    # Loop over each SCV
+    for n in range(N):
 
-        W_old = np.copy(W)  # save current W as W_old
-        cost[iteration] = 0
-        for k in range(K):
-            cost[iteration] -= np.log(np.abs(np.linalg.det(W[:, :, k])))
+        if verbose:
+            print(f'SCV {n+1}')
 
-        Q = 0
-        R = 0
+        # Main Iteration Loop
+        for iteration in range(max_iter):
 
-        grad = np.zeros((N, N, K))
-        H = np.zeros((N, N * K, N * K))
-
-        # Loop over each SCV
-        for n in range(N):
+            W_old = np.copy(W)  # save current W as W_old
+            cost[iteration] = 0
+            for k in range(K):
+                cost[iteration] -= np.log(np.abs(np.linalg.det(W[:, :, k])))
 
             # Efficient version of Sigma_n = 1/T * Y_n @ Y_n.T with Y_n = W_n @ X_n
             Sigma_n = np.eye(K)
@@ -217,71 +211,74 @@ def deflationary_iva_g(X, whiten=True,
 
             Sigma_inv = np.linalg.inv(Sigma_n)
 
-            hnk, Q, R = _decouple_trick(W, n, Q, R)
+            hnk = _decouple_trick(W, n)
 
-            # Loop over each dataset
+            # compute gradient
+            grad = np.zeros((N, K))
             for k in range(K):
                 # Analytic derivative of cost function with respect to vn
                 # Code below is efficient implementation of computing the gradient, which is
                 # independent of T
-                grad[n, :, k] = - hnk[:, k] / (W[n, :, k] @ hnk[:, k])
+                grad[:, k] = - hnk[:, k] / (W[n, :, k] @ hnk[:, k])
 
                 for kk in range(K):
-                    grad[n, :, k] += R_xx[:, :, k, kk] @ W[n, :, kk] * Sigma_inv[kk, k]
+                    grad[:, k] += R_xx[:, :, k, kk] @ W[n, :, kk] * Sigma_inv[kk, k]
 
             # Compute SCV Hessian
+            H = np.zeros((N * K, N * K))
             for k1 in range(K):
-                H[n, k1 * N:k1 * N + N, k1 * N:k1 * N + N] = \
+                H[k1 * N:k1 * N + N, k1 * N:k1 * N + N] = \
                     Sigma_inv[k1, k1] * R_xx[:, :, k1, k1] + np.outer(
                         hnk[:, k1], hnk[:, k1]) / (hnk[:, k1] @ W[n, :, k1]) ** 2
 
                 for k2 in range(k1 + 1, K):
                     Hs = Sigma_inv[k1, k2] * R_xx[:, :, k2, k1].T
-                    H[n, k1 * N: k1 * N + N, k2 * N: k2 * N + N] = Hs
-                    H[n, k2 * N: k2 * N + N, k1 * N: k1 * N + N] = Hs.T
+                    H[k1 * N: k1 * N + N, k2 * N: k2 * N + N] = Hs
+                    H[k2 * N: k2 * N + N, k1 * N: k1 * N + N] = Hs.T
 
-        # concatenate the update rules in one big matrix. Each NxN block belongs to one W^[k]
-        U = np.zeros((N, N * K))
-        for n in range(N):
-            U[n, :] = np.linalg.solve(H[n, :, :], grad[n, :, :].flatten('F'))
+            # update w_n^[1] ... w_n^[K]
+            Wn = W[n, :, :].flatten(order='F')
+            Wn -= alpha0 * np.linalg.solve(H, grad.flatten('F'))
 
-        # update W^[k]
-        for k in range(K):
-            U_k = U[:, k * N:(k + 1) * N]
-            if orthogonal:
-                E_k = U_k @ W[:, :, k].T - W[:, :, k] @ U_k.T  # project U^[k] on nearest skew-symmetric matrix
-                W[:, :, k] -= alpha0 * E_k @ W[:,:,k]
-            else:  # non-orthogonal update
-                W[:, :, k] -= alpha0 * U_k
-                for n in range(N):
-                    W[n, :, k] = _normalize_column_vectors(W[n, :, k])  # make vectors unit-norm
-
-        for k in range(K):
-            term_criterion = np.maximum(term_criterion, np.amax(
-                1 - np.abs(np.diag(W_old[:, :, k] @ W[:, :, k].T))))
-
-        W_change.append(term_criterion)
-
-        # Decrease step size alpha if cost increased from last iteration
-        if iteration > 0 and cost[iteration] > cost[iteration - 1]:
-            alpha0 = np.maximum(alpha_min, alpha_scale * alpha0)
-
-        # Check the termination condition
-        if term_criterion < W_diff_stop:
-            break
-        elif term_criterion > blowup or np.isnan(cost[iteration]):
+            # Store Updated W
+            Wn = np.reshape(Wn, (N, K), 'F')
             for k in range(K):
-                W[:, :, k] = np.eye(N) + 0.1 * np.random.randn(N, N)
+                W[n, :, k] = _normalize_column_vectors(Wn[:, k])  # make vectors unit-norm
+
+            # make following demixing vectors orthogonal to current and previous
+            for k in range(K):
+                Wnk = W[0:n + 1, :, k]  # N x n matrix
+                Pnk = np.eye(N) - Wnk.T @ np.linalg.inv(Wnk @ Wnk.T) @ Wnk
+                Wk_tilde = W[n + 1:, :, k] @ Pnk # N x (N-n) matrix
+                W[:, :, k] = np.vstack([Wnk, Wk_tilde])
+
+            term_criterion = 0
+            for k in range(K):
+                term_criterion = np.maximum(term_criterion, np.amax(
+                    1 - np.abs(W_old[n, :, k] @ W[n, :, k].T)))
+
+            W_change.append(term_criterion)
+
+            # Decrease step size alpha if cost increased from last iteration
+            if iteration > 0 and cost[iteration] > cost[iteration - 1]:
+                alpha0 = np.maximum(alpha_min, alpha_scale * alpha0)
+
+            # Check the termination condition
+            if term_criterion < W_diff_stop:
+                break
+            elif term_criterion > blowup or np.isnan(cost[iteration]):
+                for k in range(K):
+                    W[:, :, k] = np.eye(N) + 0.1 * np.random.randn(N, N)
+                if verbose:
+                    print('W blowup, restart with new initial value.')
+
+            # Display Iteration Information
             if verbose:
-                print('W blowup, restart with new initial value.')
+                print(f'Step {iteration}: W change: {term_criterion}, Cost: {cost[iteration]}')
 
-        # Display Iteration Information
-        if verbose:
+        # Finish Display
+        if iteration == 0 and verbose:
             print(f'Step {iteration}: W change: {term_criterion}, Cost: {cost[iteration]}')
-
-    # Finish Display
-    if iteration == 0 and verbose:
-        print(f'Step {iteration}: W change: {term_criterion}, Cost: {cost[iteration]}')
 
     # Clean-up Outputs
     cost = cost[0:iteration + 1]
