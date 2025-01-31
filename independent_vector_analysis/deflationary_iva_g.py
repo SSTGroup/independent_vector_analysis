@@ -2,12 +2,12 @@ import numpy as np
 import scipy as sc
 import time
 
-from .helpers_iva import _normalize_column_vectors, _decouple_trick, whiten_data, _resort_scvs
+from .helpers_iva import _normalize_column_vectors, _decouple_trick, _bss_isi,whiten_data, _resort_scvs
 from .initializations import _jbss_sos, _cca
 
 
 def deflationary_iva_g(X, whiten=True,
-                       verbose=False, W_init=None, jdiag_initW=False, max_iter=1024,
+                       verbose=False, A=None, W_init=None, jdiag_initW=False, max_iter=1024,
                        W_diff_stop=1e-6, alpha0=1.0, return_W_change=False):
     """
     Implementation of all the second-order (Gaussian) independent vector analysis (IVA) algorithms.
@@ -74,7 +74,7 @@ def deflationary_iva_g(X, whiten=True,
     Sigma_N : np.ndarray
         Covariance matrix of each source component vector, with dimensions K x K x N
 
-    isi : float
+    j_isi : float
         joint isi (inter-symbol-interference) for each iteration. Only available if user
         supplies true mixing matrices for computing a performance metric. Else returns np.nan.
 
@@ -111,6 +111,13 @@ def deflationary_iva_g(X, whiten=True,
 
     # get dimensions
     N, T, K = X.shape
+
+    if A is not None:
+        supply_A = True
+        if A.shape[0] != N or A.shape[1] != N or A.shape[2] != K:
+            raise AssertionError('A must have dimensions N x N x K.')
+    else:
+        supply_A = False
 
     blowup = 1e3
     # set alpha0 to max(alpha_min, alpha0*alpha_scale) when cost does not decrease
@@ -176,7 +183,17 @@ def deflationary_iva_g(X, whiten=True,
             for k in range(K):
                 W[:, :, k] = np.linalg.solve(sc.linalg.sqrtm(W[:, :, k] @ W[:, :, k].T), W[:, :, k])
 
-    isi = None
+    if supply_A:
+        j_isi = np.zeros(1)
+        if whiten:
+            # A matrix is conditioned by V if data is whitened
+            A_w = np.copy(A)
+            for k in range(K):
+                A_w[:, :, k] = V[:, :, k] @ A_w[:, :, k]
+        else:
+            A_w = np.copy(A)
+    else:
+        j_isi = None
 
     # Initialize some local variables
     cost = np.zeros(max_iter)
@@ -280,8 +297,15 @@ def deflationary_iva_g(X, whiten=True,
         if iteration == 0 and verbose:
             print(f'Step {iteration}: W change: {term_criterion}, Cost: {cost[iteration]}')
 
+    # Some additional computations of performance via ISI when true A is supplied
+    if supply_A:
+        avg_isi, joint_isi = _bss_isi(W, A_w)
+
     # Clean-up Outputs
     cost = cost[0:iteration + 1]
+
+    if supply_A:
+        j_isi = joint_isi[np.newaxis]
 
     if whiten:
         for k in range(K):
@@ -304,6 +328,6 @@ def deflationary_iva_g(X, whiten=True,
         print(f"IVA-G finished after {(end - start) / 60} minutes with {iteration} iterations.")
 
     if return_W_change:
-        return W, cost, Sigma_N, isi, W_change
+        return W, cost, Sigma_N, j_isi, W_change
     else:
-        return W, cost, Sigma_N, isi
+        return W, cost, Sigma_N, j_isi

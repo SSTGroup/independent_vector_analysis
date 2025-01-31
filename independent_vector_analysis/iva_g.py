@@ -293,7 +293,6 @@ def iva_g(X, opt_approach='newton', complex_valued=False, circular=False, whiten
 
     # Main Iteration Loop
     for iteration in range(max_iter):
-        term_criterion = 0
 
         # Some additional computations of performance via ISI when true A is supplied
         if supply_A:
@@ -450,6 +449,7 @@ def iva_g(X, opt_approach='newton', complex_valued=False, circular=False, whiten
                 for k in range(K):
                     W[n, :, k] = _normalize_column_vectors(Wn[:, k])
 
+        term_criterion = 0
         for k in range(K):
             if complex_valued:  # for complex data, W_old @ W.T is not bounded between -1 and 1
                 term_criterion = np.maximum(term_criterion, np.amax(np.abs(
