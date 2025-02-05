@@ -268,7 +268,7 @@ def deflationary_iva_g(X, whiten=True,
                 for k in range(K):
                     Wnk = W[0:i, :, k]  # N x (i-1) matrix containing i-1 previous demixing vectors
                     Pnk = np.eye(N) - Wnk.T @ np.linalg.inv(Wnk @ Wnk.T) @ Wnk
-                    W[i, :, k] = W[i, :, k] @ Pnk  # update w_i^[k]
+                    W[i, :, k] = Pnk @ W[i, :, k]  # update w_i^[k]
                     W[i, :, k] /= np.linalg.norm(W[i,:, k])  # make vectors unit-norm
 
             term_criterion = 0
