@@ -262,17 +262,25 @@ def deflationary_iva_g(X, whiten=True,
             for k in range(K):
                 W[n, :, k] = _normalize_column_vectors(Wn[:, k])  # make vectors unit-norm
 
-            # make following demixing vectors orthogonal to current and previous
-            for k in range(K):
-                Wnk = W[0:n + 1, :, k]  # N x n matrix
-                Pnk = np.eye(N) - Wnk.T @ np.linalg.inv(Wnk @ Wnk.T) @ Wnk
-                Wk_tilde = W[n + 1:, :, k] @ Pnk # N x (N-n) matrix
-                W[:, :, k] = np.vstack([Wnk, Wk_tilde])
+            # make current demixing vector w_n^[k] orthogonal to all previous w_1^[k] ... w_{n-1}^[k]
+            if n > 0:
+                for k in range(K):
+                    Wnk = W[0:n, :, k]  # N x (n-1) matrix containing n-1 previous demixing vectors
+                    Pnk = np.eye(N) - Wnk.T @ np.linalg.inv(Wnk @ Wnk.T) @ Wnk
+                    W[n, :, k] = W[n, :, k] @ Pnk  # update w_n^[k]
+
+            # make all following demixing vectors w_i^[k] orthogonal to current and previous demixing
+            # vectors w_1^[k] ... w_{i-1}^[k], i=n+1, ..., N, so that W[k] stays orthogonal
+            if n < N - 1:
+                for i in range(n+1, N):
+                    for k in range(K):
+                        Wnk = W[0:i, :, k]  # N x n matrix
+                        Pnk = np.eye(N) - Wnk.T @ np.linalg.inv(Wnk @ Wnk.T) @ Wnk
+                        W[i, :, k] = W[i, :, k] @ Pnk  # N x (N-n) matrix
 
             term_criterion = 0
             for k in range(K):
-                term_criterion = np.maximum(term_criterion, np.amax(
-                    1 - np.abs(W_old[n, :, k] @ W[n, :, k].T)))
+                term_criterion = np.maximum(term_criterion, 1 - np.abs(W_old[n, :, k] @ W[n, :, k].T))
 
             W_change.append(term_criterion)
 
