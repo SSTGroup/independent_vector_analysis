@@ -219,8 +219,9 @@ def orthogonal_iva_g(X, whiten=True,
         Q = 0
         R = 0
 
-        grad = np.zeros((N, N, K))
-        H = np.zeros((N, N * K, N * K))
+        grad = np.zeros((N, K))
+        H = np.zeros((N * K, N * K))
+        U = np.zeros((N, N * K))
 
         # Loop over each SCV
         for n in range(N):
@@ -244,26 +245,24 @@ def orthogonal_iva_g(X, whiten=True,
                 # Analytic derivative of cost function with respect to vn
                 # Code below is efficient implementation of computing the gradient, which is
                 # independent of T
-                grad[n, :, k] = - hnk[:, k] / (W[n, :, k] @ hnk[:, k])
+                grad[:, k] = - hnk[:, k] / (W[n, :, k] @ hnk[:, k])
 
                 for kk in range(K):
-                    grad[n, :, k] += R_xx[:, :, k, kk] @ W[n, :, kk] * Sigma_inv[kk, k]
+                    grad[:, k] += R_xx[:, :, k, kk] @ W[n, :, kk] * Sigma_inv[kk, k]
 
             # Compute SCV Hessian
             for k1 in range(K):
-                H[n, k1 * N:k1 * N + N, k1 * N:k1 * N + N] = \
+                H[k1 * N:k1 * N + N, k1 * N:k1 * N + N] = \
                     Sigma_inv[k1, k1] * R_xx[:, :, k1, k1] + np.outer(
                         hnk[:, k1], hnk[:, k1]) / (hnk[:, k1] @ W[n, :, k1]) ** 2
 
                 for k2 in range(k1 + 1, K):
                     Hs = Sigma_inv[k1, k2] * R_xx[:, :, k2, k1].T
-                    H[n, k1 * N: k1 * N + N, k2 * N: k2 * N + N] = Hs
-                    H[n, k2 * N: k2 * N + N, k1 * N: k1 * N + N] = Hs.T
+                    H[k1 * N: k1 * N + N, k2 * N: k2 * N + N] = Hs
+                    H[k2 * N: k2 * N + N, k1 * N: k1 * N + N] = Hs.T
 
-        # concatenate the update rules in one big matrix. Each NxN block belongs to one W^[k]
-        U = np.zeros((N, N * K))
-        for n in range(N):
-            U[n, :] = np.linalg.solve(H[n, :, :], grad[n, :, :].flatten('F'))
+            # concatenate the update rules in one big matrix. Each NxN block belongs to one W^[k]
+            U[n, :] = np.linalg.solve(H, grad.flatten('F'))
 
         # update W^[k]
         for k in range(K):
