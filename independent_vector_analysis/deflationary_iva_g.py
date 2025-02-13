@@ -206,7 +206,7 @@ def deflationary_iva_g(X, whiten=True,
     for n in range(N):
 
         if verbose:
-            print(f'SCV {n+1}')
+            print(f'SCV {n + 1}')
 
         # Main Iteration Loop
         for iteration in range(max_iter):
@@ -262,14 +262,23 @@ def deflationary_iva_g(X, whiten=True,
             for k in range(K):
                 W[n, :, k] = Wn[:, k]
 
-            # make demixing vector w_i^[k] orthogonal to all previous w_1^[k] ... w_{i-1}^[k], i = n, ..., N
-            # for first demixing vector, the orthogonal projection matrix Pnk is identity matrix
-            for i in range(n,N):
-                for k in range(K):
-                    Wnk = W[0:i, :, k]  # N x (i-1) matrix containing i-1 previous demixing vectors
+            # make demixing vector w_n^[k] orthogonal to all previous w_n^[k] ... w_{n-1}^[k]
+            for k in range(K):
+                if n > 0:
+                    Wnk = W[0:n, :, k]  # (n-1) x N matrix containing n-1 previous demixing vectors
                     Pnk = np.eye(N) - Wnk.T @ np.linalg.inv(Wnk @ Wnk.T) @ Wnk
-                    W[i, :, k] = Pnk @ W[i, :, k]  # update w_i^[k]
-                    W[i, :, k] /= np.linalg.norm(W[i,:, k])  # make vectors unit-norm
+                    W[n, :, k] = Pnk @ W[n, :, k]  # update w_i^[k]
+                W[n, :, k] /= np.linalg.norm(W[n, :, k])  # make vectors unit-norm
+
+            # make demixing vectors w_{n+1}^[k], ..., w_N^[k] orthogonal to w_1^[k], ..., w_n^[k]
+            if n < N - 1:
+                for k in range(K):
+                    Wn1k = W[0:n + 1, :, k]  # n x N matrix containing n previous demixing vectors
+                    Pn1k = np.eye(N) - Wn1k.T @ np.linalg.inv(Wn1k @ Wn1k.T) @ Wn1k
+                    W[n + 1:, :, k] = W[n + 1:, :, k] @ Pn1k  # update w_{n+1}^[k], ..., w_N^[k]
+                    # make w_{n+1}^[k], ..., w_N^[k] orthogonal to each other
+                    W[n + 1:, :, k] = np.linalg.solve(sc.linalg.sqrtm(W[n + 1:, :, k] @ W[n + 1:, :, k].T),
+                                                      W[n + 1:, :, k])
 
             term_criterion = 0
             for k in range(K):
@@ -298,14 +307,12 @@ def deflationary_iva_g(X, whiten=True,
         if iteration == 0 and verbose:
             print(f'Step {iteration}: W change: {term_criterion}, Cost: {cost[iteration]}')
 
-    # Some additional computations of performance via ISI when true A is supplied
-    if supply_A:
-        avg_isi, joint_isi = _bss_isi(W, A_w)
-
     # Clean-up Outputs
     cost = cost[0:iteration + 1]
 
+    # Some additional computations of performance via ISI when true A is supplied
     if supply_A:
+        avg_isi, joint_isi = _bss_isi(W, A_w)
         j_isi = joint_isi[np.newaxis]
 
     if whiten:
