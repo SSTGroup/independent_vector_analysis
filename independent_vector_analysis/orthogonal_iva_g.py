@@ -269,8 +269,8 @@ def orthogonal_iva_g(X, whiten=True,
         for k in range(K):
             U_k = U[:, k * N:(k + 1) * N]
             if orthogonal:
-                E_k = U_k @ W[:, :, k].T - W[:, :, k] @ U_k.T  # project U^[k] on nearest skew-symmetric matrix
-                W[:, :, k] -= alpha0 * E_k @ W[:, :, k]
+                E_k = U_k @ W[:, :, k].T - W[:, :, k] @ U_k.T  # project U^[k] W^[k]^T on nearest skew-symmetric matrix
+                W[:, :, k] = sc.linalg.expm(-alpha0 * E_k) @ W[:, :, k]
             else:  # non-orthogonal update
                 W[:, :, k] -= alpha0 * U_k
                 for n in range(N):
