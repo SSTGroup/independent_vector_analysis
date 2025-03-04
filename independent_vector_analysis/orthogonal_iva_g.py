@@ -274,7 +274,7 @@ def orthogonal_iva_g(X, whiten=True,
             else:  # non-orthogonal update
                 W[:, :, k] -= alpha0 * U_k
                 for n in range(N):
-                    W[n, :, k] = _normalize_column_vectors(W[n, :, k])  # make vectors unit-norm
+                    W[n, :, k] /= np.linalg.norm(W[n, :, k])  # make vectors unit-norm
 
         term_criterion = 0
         for k in range(K):
