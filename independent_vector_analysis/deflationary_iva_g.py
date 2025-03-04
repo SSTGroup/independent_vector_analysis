@@ -2,13 +2,13 @@ import numpy as np
 import scipy as sc
 import time
 
-from .helpers_iva import _normalize_column_vectors, _decouple_trick, _bss_isi,whiten_data, _resort_scvs
+from .helpers_iva import _normalize_column_vectors, _decouple_trick, _bss_isi, whiten_data, _resort_scvs
 from .initializations import _jbss_sos, _cca
 
 
 def deflationary_iva_g(X, whiten=True,
                        verbose=False, A=None, W_init=None, jdiag_initW=False, max_iter=1024,
-                       W_diff_stop=1e-6, alpha0=1.0, return_W_change=False):
+                       W_diff_stop=1e-6, alpha0=1.0, return_W_change=False, R_xx=None):
     """
     Implementation of all the second-order (Gaussian) independent vector analysis (IVA) algorithms.
     Namely real-valued and complex-valued with circular and non-circular using Newton, gradient,
@@ -131,12 +131,13 @@ def deflationary_iva_g(X, whiten=True,
     if whiten:
         X, V = whiten_data(X)
 
-    # calculate cross-covariance matrices of X
-    R_xx = np.zeros((N, N, K, K), dtype=X.dtype)
-    for k1 in range(K):
-        for k2 in range(k1, K):
-            R_xx[:, :, k1, k2] = 1 / T * X[:, :, k1] @ X[:, :, k2].T
-            R_xx[:, :, k2, k1] = R_xx[:, :, k1, k2].T  # R_xx is symmetric
+    if R_xx is None:
+        # calculate cross-covariance matrices of X
+        R_xx = np.zeros((N, N, K, K), dtype=X.dtype)
+        for k1 in range(K):
+            for k2 in range(k1, K):
+                R_xx[:, :, k1, k2] = 1 / T * X[:, :, k1] @ X[:, :, k2].T
+                R_xx[:, :, k2, k1] = R_xx[:, :, k1, k2].T  # R_xx is symmetric
 
     # Check rank of data-covariance matrix: should be full rank, if not we inflate (this is ad hoc)
     # concatenate all covariance matrices in a big matrix
@@ -262,7 +263,7 @@ def deflationary_iva_g(X, whiten=True,
             for k in range(K):
                 W[n, :, k] = Wn[:, k]
 
-            # make demixing vector w_n^[k] orthogonal to all previous w_n^[k] ... w_{n-1}^[k]
+            # make demixing vector w_n^[k] orthogonal to all previous w_1^[k] ... w_{n-1}^[k]
             for k in range(K):
                 if n > 0:
                     Wnk = W[0:n, :, k]  # (n-1) x N matrix containing n-1 previous demixing vectors
