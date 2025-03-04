@@ -2,13 +2,13 @@ import numpy as np
 import scipy as sc
 import time
 
-from .helpers_iva import _normalize_column_vectors, _decouple_trick,_bss_isi, whiten_data, _resort_scvs
+from .helpers_iva import _normalize_column_vectors, _decouple_trick, _bss_isi, whiten_data, _resort_scvs
 from .initializations import _jbss_sos, _cca
 
 
 def orthogonal_iva_g(X, whiten=True,
                      verbose=False, A=None, W_init=None, jdiag_initW=False, max_iter=1024,
-                     W_diff_stop=1e-6, alpha0=1.0, return_W_change=False, orthogonal=False):
+                     W_diff_stop=1e-6, alpha0=1.0, return_W_change=False, orthogonal=False, R_xx=None):
     """
     Implementation of all the second-order (Gaussian) independent vector analysis (IVA) algorithms.
     Namely real-valued and complex-valued with circular and non-circular using Newton, gradient,
@@ -131,12 +131,13 @@ def orthogonal_iva_g(X, whiten=True,
     if whiten:
         X, V = whiten_data(X)
 
-    # calculate cross-covariance matrices of X
-    R_xx = np.zeros((N, N, K, K), dtype=X.dtype)
-    for k1 in range(K):
-        for k2 in range(k1, K):
-            R_xx[:, :, k1, k2] = 1 / T * X[:, :, k1] @ X[:, :, k2].T
-            R_xx[:, :, k2, k1] = R_xx[:, :, k1, k2].T  # R_xx is symmetric
+    if R_xx is None:
+        # calculate cross-covariance matrices of X
+        R_xx = np.zeros((N, N, K, K), dtype=X.dtype)
+        for k1 in range(K):
+            for k2 in range(k1, K):
+                R_xx[:, :, k1, k2] = 1 / T * X[:, :, k1] @ X[:, :, k2].T
+                R_xx[:, :, k2, k1] = R_xx[:, :, k1, k2].T  # R_xx is symmetric
 
     # Check rank of data-covariance matrix: should be full rank, if not we inflate (this is ad hoc)
     # concatenate all covariance matrices in a big matrix
@@ -210,7 +211,6 @@ def orthogonal_iva_g(X, whiten=True,
             avg_isi, joint_isi = _bss_isi(W, A_w)
             j_isi[iteration] = joint_isi
 
-
         W_old = np.copy(W)  # save current W as W_old
         cost[iteration] = 0
         for k in range(K):
@@ -240,7 +240,7 @@ def orthogonal_iva_g(X, whiten=True,
 
             hnk, Q, R = _decouple_trick(W, n, Q, R)
 
-            # Loop over each dataset
+            # Compute gradient
             for k in range(K):
                 # Analytic derivative of cost function with respect to vn
                 # Code below is efficient implementation of computing the gradient, which is
