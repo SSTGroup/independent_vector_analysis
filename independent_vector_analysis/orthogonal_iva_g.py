@@ -219,12 +219,13 @@ def orthogonal_iva_g(X, whiten=True,
         Q = 0
         R = 0
 
-        grad = np.zeros((N, K))
-        H = np.zeros((N * K, N * K))
         U = np.zeros((N, N * K))
 
         # Loop over each SCV
         for n in range(N):
+
+            grad = np.zeros((N, K))
+            H = np.zeros((N * K, N * K))
 
             # Efficient version of Sigma_n = 1/T * Y_n @ Y_n.T with Y_n = W_n @ X_n
             Sigma_n = np.eye(K)
