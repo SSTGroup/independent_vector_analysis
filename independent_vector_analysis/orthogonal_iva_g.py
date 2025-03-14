@@ -8,7 +8,7 @@ from .initializations import _jbss_sos, _cca
 
 def orthogonal_iva_g(X, whiten=True,
                      verbose=False, A=None, W_init=None, jdiag_initW=False, max_iter=1024,
-                     W_diff_stop=1e-6, alpha0=1.0, return_W_change=False, orthogonal=False, R_xx=None):
+                     W_diff_stop=1e-6, alpha0=1.0, return_W_change=False, orthogonal=False, update='newton', R_xx=None):
     """
     Implementation of all the second-order (Gaussian) independent vector analysis (IVA) algorithms.
     Namely real-valued and complex-valued with circular and non-circular using Newton, gradient,
@@ -225,6 +225,7 @@ def orthogonal_iva_g(X, whiten=True,
         for n in range(N):
 
             grad = np.zeros((N, K))
+            norm_grad = np.zeros((N, K))
             H = np.zeros((N * K, N * K))
 
             # Efficient version of Sigma_n = 1/T * Y_n @ Y_n.T with Y_n = W_n @ X_n
@@ -251,6 +252,8 @@ def orthogonal_iva_g(X, whiten=True,
                 for kk in range(K):
                     grad[:, k] += R_xx[:, :, k, kk] @ W[n, :, kk] * Sigma_inv[kk, k]
 
+                temp_grad = (np.eye(N) - np.outer(W[n, :, k], W[n, :, k])) @ grad[:, k]
+                norm_grad[:, k] = temp_grad / np.linalg.norm(temp_grad)
             # Compute SCV Hessian
             for k1 in range(K):
                 H[k1 * N:k1 * N + N, k1 * N:k1 * N + N] = \
@@ -263,14 +266,26 @@ def orthogonal_iva_g(X, whiten=True,
                     H[k2 * N: k2 * N + N, k1 * N: k1 * N + N] = Hs.T
 
             # concatenate the update rules in one big matrix. Each NxN block belongs to one W^[k]
-            U[n, :] = np.linalg.solve(H, grad.flatten('F'))
+            if update=='newton':
+                U[n, :] = np.linalg.solve(H, grad.flatten('F'))
+            elif update=='gradient':
+                U[n, :] = grad.flatten('F')
+            elif update=='norm_gradient':
+                U[n, :] = norm_grad.flatten('F')
 
         # update W^[k]
         for k in range(K):
-            U_k = U[:, k * N:(k + 1) * N]
-            if orthogonal:
+            U_k = U[:, k * N:(k + 1) * N]  # same as: standard matrix update when based on samples
+            # U_k = 1 / T * phi[:, :, k] @ X[:, :, k].T - np.linalg.inv(W[:, :, k]).T  # standard matrix gradient update
+            # U_k = 1 / T * phi[:, :, k] @ Y[:, :, k].T @ W[:,:,k] - W[:, :, k]  # natural gradient matrix update
+            if orthogonal=='geodesic':
                 E_k = U_k @ W[:, :, k].T - W[:, :, k] @ U_k.T  # project U^[k] W^[k]^T on nearest skew-symmetric matrix
+                # W[:, :, k] -= (np.eye(K) - sc.linalg.expm(-alpha0 * E_k)) @ W[:, :, k]
                 W[:, :, k] = sc.linalg.expm(-alpha0 * E_k) @ W[:, :, k]
+            elif orthogonal=='simple':
+                # make W^[k] simply orthogonal
+                W[:, :, k] -= alpha0 * U_k
+                W[:, :, k] = np.linalg.solve(sc.linalg.sqrtm(W[:, :, k] @ W[:, :, k].T), W[:, :, k])
             else:  # non-orthogonal update
                 W[:, :, k] -= alpha0 * U_k
                 for n in range(N):

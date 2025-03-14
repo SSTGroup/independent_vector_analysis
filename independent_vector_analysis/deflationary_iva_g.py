@@ -8,7 +8,7 @@ from .initializations import _jbss_sos, _cca
 
 def deflationary_iva_g(X, whiten=True,
                        verbose=False, A=None, W_init=None, jdiag_initW=False, max_iter=1024,
-                       W_diff_stop=1e-6, alpha0=1.0, return_W_change=False, R_xx=None):
+                       W_diff_stop=1e-6, alpha0=1.0, return_W_change=False, R_xx=None, update='newton'):
     """
     Implementation of all the second-order (Gaussian) independent vector analysis (IVA) algorithms.
     Namely real-valued and complex-valued with circular and non-circular using Newton, gradient,
@@ -233,6 +233,7 @@ def deflationary_iva_g(X, whiten=True,
 
             # compute gradient
             grad = np.zeros((N, K))
+            norm_grad = np.zeros((N, K))
             for k in range(K):
                 # Analytic derivative of cost function with respect to vn
                 # Code below is efficient implementation of computing the gradient, which is
@@ -241,6 +242,9 @@ def deflationary_iva_g(X, whiten=True,
 
                 for kk in range(K):
                     grad[:, k] += R_xx[:, :, k, kk] @ W[n, :, kk] * Sigma_inv[kk, k]
+
+                temp_grad = (np.eye(N) - np.outer(W[n, :, k], W[n, :, k])) @ grad[:, k]
+                norm_grad[:, k] = temp_grad / np.linalg.norm(temp_grad)
 
             # Compute SCV Hessian
             H = np.zeros((N * K, N * K))
@@ -256,7 +260,12 @@ def deflationary_iva_g(X, whiten=True,
 
             # update w_n^[1] ... w_n^[K]
             Wn = W[n, :, :].flatten(order='F')
-            Wn -= alpha0 * np.linalg.solve(H, grad.flatten('F'))
+            if update == 'newton':
+                Wn -= alpha0 * np.linalg.solve(H, grad.flatten('F'))
+            elif update == 'gradient':
+                Wn -= alpha0 * grad.flatten('F')
+            elif update == 'norm_gradient':
+                Wn -= alpha0 * norm_grad.flatten('F')
 
             # Store Updated W
             Wn = np.reshape(Wn, (N, K), 'F')
