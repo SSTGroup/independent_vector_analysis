@@ -200,12 +200,13 @@ def deflationary_iva_g(X, whiten=True,
     cost = np.zeros(max_iter)
     cost_const = K * np.log(2 * np.pi * np.exp(1))  # local constant
 
-    # to store the change in W in each iteration
-    W_change = []
+    W_change = {}
 
     # Loop over each SCV
     for n in range(N):
 
+        # to store the change in W in each iteration
+        W_change_n = []
         if verbose:
             print(f'SCV {n + 1}')
 
@@ -294,7 +295,7 @@ def deflationary_iva_g(X, whiten=True,
             for k in range(K):
                 term_criterion = np.maximum(term_criterion, 1 - np.abs(W_old[n, :, k] @ W[n, :, k].T))
 
-            W_change.append(term_criterion)
+            W_change_n.append(term_criterion)
 
             # Decrease step size alpha if cost increased from last iteration
             if iteration > 0 and cost[iteration] > cost[iteration - 1]:
@@ -313,9 +314,11 @@ def deflationary_iva_g(X, whiten=True,
             if verbose:
                 print(f'Step {iteration}: W change: {term_criterion}, Cost: {cost[iteration]}')
 
+        W_change[n] = W_change_n
+
         # Finish Display
         if iteration == 0 and verbose:
-            print(f'Step {iteration}: W change: {term_criterion}, Cost: {cost[iteration]}')
+            print(f'SCV {n + 1}. Step {iteration}: W change: {term_criterion}, Cost: {cost[iteration]}')
 
     # Clean-up Outputs
     cost = cost[0:iteration + 1]
