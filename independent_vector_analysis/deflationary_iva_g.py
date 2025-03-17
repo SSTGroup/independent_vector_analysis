@@ -120,7 +120,7 @@ def deflationary_iva_g(X, whiten=True,
         supply_A = False
 
     blowup = 1e3
-    # set alpha0 to max(alpha_min, alpha0*alpha_scale) when cost does not decrease
+    # set stepsize to max(alpha_min, stepsize*alpha_scale) when cost does not decrease
     alpha_scale = 0.9
     alpha_min = W_diff_stop
 
@@ -205,6 +205,8 @@ def deflationary_iva_g(X, whiten=True,
     # Loop over each SCV
     for n in range(N):
 
+        # reset stepsize
+        stepsize = np.copy(alpha0)
         # to store the change in W in each iteration
         W_change_n = []
         if verbose:
@@ -262,11 +264,11 @@ def deflationary_iva_g(X, whiten=True,
             # update w_n^[1] ... w_n^[K]
             Wn = W[n, :, :].flatten(order='F')
             if update == 'newton':
-                Wn -= alpha0 * np.linalg.solve(H, grad.flatten('F'))
+                Wn -= stepsize * np.linalg.solve(H, grad.flatten('F'))
             elif update == 'gradient':
-                Wn -= alpha0 * grad.flatten('F')
+                Wn -= stepsize * grad.flatten('F')
             elif update == 'norm_gradient':
-                Wn -= alpha0 * norm_grad.flatten('F')
+                Wn -= stepsize * norm_grad.flatten('F')
 
             # Store Updated W
             Wn = np.reshape(Wn, (N, K), 'F')
@@ -299,7 +301,7 @@ def deflationary_iva_g(X, whiten=True,
 
             # Decrease step size alpha if cost increased from last iteration
             if iteration > 0 and cost[iteration] > cost[iteration - 1]:
-                alpha0 = np.maximum(alpha_min, alpha_scale * alpha0)
+                stepsize = np.maximum(alpha_min, alpha_scale * stepsize)
 
             # Check the termination condition
             if term_criterion < W_diff_stop:
