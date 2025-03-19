@@ -295,7 +295,7 @@ def deflationary_iva_g(X, whiten=True,
 
             term_criterion = 0
             for k in range(K):
-                term_criterion = np.maximum(term_criterion, 1 - np.abs(W_old[n, :, k] @ W[n, :, k].T))
+                term_criterion = np.maximum(term_criterion, 1 - np.abs(W_old[n, :, k].T @ W[n, :, k]))
 
             W_change_n.append(term_criterion)
 
