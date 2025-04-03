@@ -8,7 +8,7 @@ from .initializations import _jbss_sos, _cca
 
 def orthogonal_iva_g(X, whiten=True,
                      verbose=False, A=None, W_init=None, jdiag_initW=False, max_iter=1024,
-                     W_diff_stop=1e-6, alpha0=1.0, return_W_change=False, orthogonal=False, update='newton', R_xx=None):
+                     W_diff_stop=1e-6, alpha0=1.0, return_W_change=False, orthogonal=False, opt_approach='newton', R_xx=None):
     """
     Implementation of all the second-order (Gaussian) independent vector analysis (IVA) algorithms.
     Namely real-valued and complex-valued with circular and non-circular using Newton, gradient,
@@ -266,11 +266,11 @@ def orthogonal_iva_g(X, whiten=True,
                     H[k2 * N: k2 * N + N, k1 * N: k1 * N + N] = Hs.T
 
             # concatenate the update rules in one big matrix. Each NxN block belongs to one W^[k]
-            if update=='newton':
+            if opt_approach== 'newton':
                 U[n, :] = np.linalg.solve(H, grad.flatten('F'))
-            elif update=='gradient':
+            elif opt_approach== 'gradient':
                 U[n, :] = grad.flatten('F')
-            elif update=='norm_gradient':
+            elif opt_approach== 'norm_gradient':
                 U[n, :] = norm_grad.flatten('F')
 
         # update W^[k]

@@ -8,7 +8,7 @@ from .initializations import _jbss_sos, _cca
 
 def deflationary_iva_g(X, whiten=True,
                        verbose=False, A=None, W_init=None, jdiag_initW=False, max_iter=1024,
-                       W_diff_stop=1e-6, alpha0=1.0, return_W_change=False, R_xx=None, update='newton'):
+                       W_diff_stop=1e-6, alpha0=1.0, return_W_change=False, R_xx=None, opt_approach='newton'):
     """
     Implementation of all the second-order (Gaussian) independent vector analysis (IVA) algorithms.
     Namely real-valued and complex-valued with circular and non-circular using Newton, gradient,
@@ -263,11 +263,11 @@ def deflationary_iva_g(X, whiten=True,
 
             # update w_n^[1] ... w_n^[K]
             Wn = W[n, :, :].flatten(order='F')
-            if update == 'newton':
+            if opt_approach == 'newton':
                 Wn -= stepsize * np.linalg.solve(H, grad.flatten('F'))
-            elif update == 'gradient':
+            elif opt_approach == 'gradient':
                 Wn -= stepsize * grad.flatten('F')
-            elif update == 'norm_gradient':
+            elif opt_approach == 'norm_gradient':
                 Wn -= stepsize * norm_grad.flatten('F')
 
             # Store Updated W
