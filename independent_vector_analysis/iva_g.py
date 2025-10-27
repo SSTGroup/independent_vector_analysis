@@ -49,7 +49,7 @@ from .initializations import _jbss_sos, _cca
 
 def iva_g(X, opt_approach='newton', complex_valued=False, circular=False, whiten=True,
           verbose=False, A=None, W_init=None, jdiag_initW=False, max_iter=1024,
-          W_diff_stop=1e-6, alpha0=1.0, return_W_change=False):
+          W_diff_stop=1e-6, alpha0=1.0, return_W_change=False, R_xx=None):
     """
     Implementation of all the second-order (Gaussian) independent vector analysis (IVA) algorithms.
     Namely real-valued and complex-valued with circular and non-circular using Newton, gradient,
@@ -108,6 +108,9 @@ def iva_g(X, opt_approach='newton', complex_valued=False, circular=False, whiten
 
     return_W_change : bool, optional
         if the change in W in each iteration should be returned
+
+    R_xx : np.ndarray, optional
+        true cross covariance matrices of X of dimension N x N x K x K
 
 
     Returns
@@ -192,12 +195,13 @@ def iva_g(X, opt_approach='newton', complex_valued=False, circular=False, whiten
     if whiten:
         X, V = whiten_data(X)
 
-    # calculate cross-covariance matrices of X
-    R_xx = np.zeros((N, N, K, K), dtype=X.dtype)
-    for k1 in range(K):
-        for k2 in range(k1, K):
-            R_xx[:, :, k1, k2] = 1 / T * X[:, :, k1] @ np.conj(X[:, :, k2].T)
-            R_xx[:, :, k2, k1] = np.conj(R_xx[:, :, k1, k2].T)  # R_xx is Hermitian
+    if R_xx is None:
+        # calculate cross-covariance matrices of X
+        R_xx = np.zeros((N, N, K, K), dtype=X.dtype)
+        for k1 in range(K):
+            for k2 in range(k1, K):
+                R_xx[:, :, k1, k2] = 1 / T * X[:, :, k1] @ np.conj(X[:, :, k2].T)
+                R_xx[:, :, k2, k1] = np.conj(R_xx[:, :, k1, k2].T)  # R_xx is Hermitian
 
     # Check rank of data-covariance matrix: should be full rank, if not we inflate (this is ad hoc)
     # concatenate all covariance matrices in a big matrix
@@ -293,7 +297,6 @@ def iva_g(X, opt_approach='newton', complex_valued=False, circular=False, whiten
 
     # Main Iteration Loop
     for iteration in range(max_iter):
-        term_criterion = 0
 
         # Some additional computations of performance via ISI when true A is supplied
         if supply_A:
@@ -450,6 +453,7 @@ def iva_g(X, opt_approach='newton', complex_valued=False, circular=False, whiten
                 for k in range(K):
                     W[n, :, k] = _normalize_column_vectors(Wn[:, k])
 
+        term_criterion = 0
         for k in range(K):
             if complex_valued:  # for complex data, W_old @ W.T is not bounded between -1 and 1
                 term_criterion = np.maximum(term_criterion, np.amax(np.abs(
