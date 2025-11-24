@@ -39,6 +39,7 @@
 
 
 import numpy as np
+import scipy as sc
 
 # parallel processing
 import multiprocessing
@@ -51,7 +52,7 @@ from .iva_l_sos import iva_l_sos
 from .helpers_iva import _bss_isi
 
 
-def consistent_iva(X, which_iva='iva_g', n_runs=20, parallel=True, **kwargs):
+def consistent_iva(X, which_iva='iva_g', n_runs=20, parallel=True, W_init=None, **kwargs):
     """
     IVA is performed n_runs times with different initalizations.
     The most consistent demixing matrix along with the change in W for each iteration is returned,
@@ -86,6 +87,7 @@ def consistent_iva(X, which_iva='iva_g', n_runs=20, parallel=True, **kwargs):
         - 'cross_isi' : cross joint joint_isi for each run
         - 'cost' : cost of each run
         - 'joint_isi' : joint_isi for each run if true A is supplied, else None
+        - 'selected_run': index of the run with the lowest cross joint isi
 
 
     Notes
@@ -99,14 +101,17 @@ def consistent_iva(X, which_iva='iva_g', n_runs=20, parallel=True, **kwargs):
     Signal Processing (ICASSP), 2018.
     """
 
+    if W_init is None:
+        W_init = [None]*n_runs
+
     # calculate demixing matrices for several runs
     if parallel:
         if which_iva == 'iva_g':
-            W, cost, _, joint_isi, W_change = zip(*Parallel(n_jobs=multiprocessing.cpu_count())(
-                delayed(iva_g)(X, return_W_change=True, **kwargs) for i in tqdm(range(n_runs))))
+            W, cost, scv_cov, joint_isi, W_change = zip(*Parallel(n_jobs=multiprocessing.cpu_count())(
+                delayed(iva_g)(X, return_W_change=True, W_init=W_init[i], **kwargs) for i in tqdm(range(n_runs))))
         elif which_iva == 'iva_l_sos':
-            W, cost, _, joint_isi, W_change = zip(*Parallel(n_jobs=multiprocessing.cpu_count())(
-                delayed(iva_l_sos)(X, return_W_change=True, **kwargs) for i in tqdm(range(n_runs))))
+            W, cost, scv_cov, joint_isi, W_change = zip(*Parallel(n_jobs=multiprocessing.cpu_count())(
+                delayed(iva_l_sos)(X, return_W_change=True, W_init=W_init[i], **kwargs) for i in tqdm(range(n_runs))))
         else:
             raise AssertionError("which_iva must be 'iva_g' or 'iva_l_sos'")
         cost = [c[-1] for c in cost]
@@ -118,17 +123,19 @@ def consistent_iva(X, which_iva='iva_g', n_runs=20, parallel=True, **kwargs):
         cost = []
         joint_isi = []
         W_change = []
+        scv_cov = []
         for run in tqdm(range(n_runs)):
             if which_iva == 'iva_g':
-                temp = iva_g(X, return_W_change=True, **kwargs)
+                temp = iva_g(X, return_W_change=True, W_init=W_init[run], **kwargs)
             elif which_iva == 'iva_l_sos':
-                temp = iva_l_sos(X, return_W_change=True, **kwargs)
+                temp = iva_l_sos(X, return_W_change=True, W_init=W_init[run], **kwargs)
             else:
                 raise AssertionError("which_iva must be 'iva_g' or 'iva_l_sos'")
             W.append(temp[0])
             cost.append(temp[1])
             joint_isi.append(temp[3])
             W_change.append(temp[4])
+            scv_cov.append(temp[2])
 
         cost = [c[-1] for c in cost]
         if joint_isi[0] is not None:
@@ -141,6 +148,9 @@ def consistent_iva(X, which_iva='iva_g', n_runs=20, parallel=True, **kwargs):
     W_change = W_change[selected_run]
     joint_isi = joint_isi[selected_run]
     cost = cost[selected_run]
+    scv_cov = scv_cov[selected_run]
+    W_init = W_init[selected_run]
+
     # get dimensions
     N, T, K = X.shape
 
@@ -150,20 +160,11 @@ def consistent_iva(X, which_iva='iva_g', n_runs=20, parallel=True, **kwargs):
 
     A_hat = np.zeros((N, N, K))
     for k in range(K):
-        A_hat[:, :, k] = np.linalg.lstsq(S[:, :, k].T, X[:, :, k].T)[0].T
-
-    scv = np.zeros((K, T, N))
-    for n in range(N):
-        for k in range(K):
-            scv[k, :, n] = S[n, :, k]
-
-    scv_cov = np.zeros((K, K, N))
-    for n in range(N):
-        scv_cov[:, :, n] = np.cov(scv[:, :, n])
+        A_hat[:, :, k] = np.linalg.inv(W[:, :, k])
 
     # results
-    iva_results = {'W': W, 'S': S, 'A': A_hat, 'scv_cov': scv_cov, 'W_change': W_change,
-                   'cross_isi': cross_jnt_isi, 'cost': cost, 'joint_isi': joint_isi}
+    iva_results = {'W': W, 'S': S, 'A': A_hat, 'scv_cov': scv_cov, 'W_change': W_change, 'W_init': W_init,
+                   'cross_isi': cross_jnt_isi, 'cost': cost, 'joint_isi': joint_isi, 'selected_run': selected_run}
 
     return iva_results
 
